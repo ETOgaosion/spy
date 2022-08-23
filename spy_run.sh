@@ -2,6 +2,7 @@ echo "before online, cpu online list"
 cat /sys/devices/system/cpu/online
 echo 1 | sudo tee /sys/devices/system/cpu/cpu2/online
 echo "after online, cpu online list"
+cat /sys/devices/system/cpu/online
 echo "======= building ========"
 make all
 make test
