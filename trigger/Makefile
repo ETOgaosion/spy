@@ -1,6 +1,6 @@
 obj-m += spy.o
 spy-objs := off_patch.o
-all:
+patch:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	rm -f .*.cmd *.cmd *.mod *.mod.c *.o *.symvers *.order
 clean:
