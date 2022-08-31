@@ -10,5 +10,5 @@
  * the COPYING file in the top-level directory.
  */
 
-#define JAILHOUSE_BASE			__JH_CONST_UL(0xfffffffff0000000)
-#define JAILHOUSE_BORROW_ROOT_PT	1
+#define SPY_BASE			__SP_CONST_UL(0xfffffffff0000000)
+#define SPY_BORROW_ROOT_PT	1
