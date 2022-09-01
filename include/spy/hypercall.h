@@ -4,12 +4,12 @@
 #include <spy/console.h>
 
 #define SPY_HC_DISABLE			        0
-#define SPY_HC_CELL_CREATE		        1
-#define SPY_HC_CELL_START			    2
-#define SPY_HC_CELL_SET_LOADABLE		    3
-#define SPY_HC_CELL_DESTROY		        4
+#define SPY_HC_TARGET_CREATE		        1
+#define SPY_HC_TARGET_START			    2
+#define SPY_HC_TARGET_SET_LOADABLE		    3
+#define SPY_HC_TARGET_ELIMINATE		        4
 #define SPY_HC_HYPERVISOR_GET_INFO	    5
-#define SPY_HC_CELL_GET_STATE		    6
+#define SPY_HC_TARGET_GET_STATE		    6
 #define SPY_HC_CPU_GET_INFO		        7
 #define SPY_HC_DEBUG_CONSOLE_PUTC		8
 
@@ -18,7 +18,7 @@
 #define SPY_INFO_MEM_POOL_USED		    1
 #define SPY_INFO_REMAP_POOL_SIZE		    2
 #define SPY_INFO_REMAP_POOL_USED		    3
-#define SPY_INFO_NUM_CELLS		        4
+#define SPY_INFO_NUM_TARGETS		        4
 
 /* Hypervisor information type */
 #define SPY_CPU_INFO_STATE		        0
@@ -48,11 +48,11 @@
 #define SPY_MSG_RECEIVED			        4
 
 /* target state, initialized by hypervisor, updated by target */
-#define SPY_CELL_RUNNING			        0
-#define SPY_CELL_RUNNING_LOCKED		    1
-#define SPY_CELL_SHUT_DOWN		        2 /* terminal state */
-#define SPY_CELL_FAILED			        3 /* terminal state */
-#define SPY_CELL_FAILED_COMM_REV		    4 /* terminal state */
+#define SPY_TARGET_RUNNING			        0
+#define SPY_TARGET_RUNNING_LOCKED		    1
+#define SPY_TARGET_SHUT_DOWN		        2 /* terminal state */
+#define SPY_TARGET_FAILED			        3 /* terminal state */
+#define SPY_TARGET_FAILED_COMM_REV		    4 /* terminal state */
 
 /* indicates if inmate may use the Debug Console putc hypercall */
 #define SPY_COMM_FLAG_DBG_PUTC_PERMITTED	0x0001

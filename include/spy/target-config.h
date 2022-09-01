@@ -1,5 +1,5 @@
-#ifndef _SPY_CELL_CONFIG_H
-#define _SPY_CELL_CONFIG_H
+#ifndef _SPY_TARGET_CONFIG_H
+#define _SPY_TARGET_CONFIG_H
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) sizeof(a) / sizeof(a[0])
@@ -11,12 +11,12 @@
  */
 #define SPY_CONFIG_REVISION	13
 
-#define SPY_CELL_NAME_MAXLEN	31
+#define SPY_TARGET_NAME_MAXLEN	31
 
-#define SPY_CELL_PASSIVE_COMMREG	0x00000001
-#define SPY_CELL_TEST_DEVICE	0x00000002
+#define SPY_TARGET_PASSIVE_COMMREG	0x00000001
+#define SPY_TARGET_TEST_DEVICE	0x00000002
 
-#define SPY_CELL_DESC_SIGNATURE	"JHCELL"
+#define SPY_TARGET_DESC_SIGNATURE	"JHTARGET"
 
 /**
  * The spy target configuration.
@@ -28,7 +28,7 @@ struct spy_target_desc {
 	char signature[6];
 	__u16 revision;
 
-	char name[SPY_CELL_NAME_MAXLEN+1];
+	char name[SPY_TARGET_NAME_MAXLEN+1];
 	__u32 id; /* set by the driver */
 	__u32 flags;
 
@@ -158,4 +158,4 @@ spy_target_irqchips(const struct spy_target_desc *target)
 		 target->num_cache_regions * sizeof(struct spy_cache));
 }
 
-#endif /* !_SPY_CELL_CONFIG_H */
+#endif /* !_SPY_TARGET_CONFIG_H */

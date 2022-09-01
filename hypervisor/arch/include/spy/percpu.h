@@ -8,7 +8,7 @@
  */
 
 #include <spy/paging.h>
-#include <spy/cell.h>
+#include <spy/target.h>
 #include <asm/percpu.h>
 
 /**
@@ -24,8 +24,8 @@ struct public_per_cpu {
 
 	/** Logical CPU ID (same as Linux). */
 	unsigned int cpu_id;
-	/** Owning cell. */
-	struct cell *cell;
+	/** Owning target. */
+	struct target *target;
 
 	/** Statistic counters. */
 	u32 stats[SPY_NUM_CPU_STATS];
@@ -36,7 +36,7 @@ struct public_per_cpu {
 	 * @li negative error code: shutdown failed
 	 */
 	int shutdown_state;
-	/** True if CPU violated a cell boundary or cause some other failure in
+	/** True if CPU violated a target boundary or cause some other failure in
 	 *  guest mode. */
 	bool failed;
 
@@ -104,13 +104,13 @@ static inline unsigned int this_cpu_id(void)
 }
 
 /**
- * Retrieve the cell owning the current CPU.
+ * Retrieve the target owning the current CPU.
  *
- * @return Pointer to cell.
+ * @return Pointer to target.
  */
-static inline struct cell *this_cell(void)
+static inline struct target *this_target(void)
 {
-	return this_cpu_public()->cell;
+	return this_cpu_public()->target;
 }
 
 /**

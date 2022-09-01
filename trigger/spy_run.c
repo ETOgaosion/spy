@@ -22,12 +22,11 @@ static struct task_struct *kthread_core_2;
 
 int cpu_online_spy_thread(void *cpuid_ptr) {
     int cpuid = *(int *)cpuid_ptr;
-    native_cpu_up(cpuid, );
+    native_cpu_up(cpuid, NULL);
 }
 
-int cpu_online_spy_thread(void *cpuid_ptr) {
-    int cpuid = *(int *)cpuid_ptr;
-    native_cpu_up(cpuid, );
+int cpu_offline_spy_thread(void *cpuid_ptr) {
+    native_play_dead();
 }
 
 int run_init() {
