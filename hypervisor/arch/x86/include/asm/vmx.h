@@ -28,10 +28,10 @@
  * Place - Suite 330, Boston, MA 02111-1307 USA.
  */
 
-#ifndef _JAILHOUSE_ASM_VMX_H
-#define _JAILHOUSE_ASM_VMX_H
+#ifndef _SPY_ASM_VMX_H
+#define _SPY_ASM_VMX_H
 
-#include <jailhouse/paging.h>
+#include <spy/paging.h>
 
 struct per_cpu;
 
@@ -329,4 +329,4 @@ void vmx_entry_failure(void);
 
 void vmx_vmexit(void);
 
-#endif /* !_JAILHOUSE_ASM_VMX_H */
+#endif /* !_SPY_ASM_VMX_H */

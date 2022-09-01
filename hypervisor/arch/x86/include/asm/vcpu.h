@@ -1,23 +1,11 @@
-/*
- * Jailhouse, a Linux-based partitioning hypervisor
- *
- * Copyright (c) Valentine Sinitsyn, 2014
- *
- * Authors:
- *  Valentine Sinitsyn <valentine.sinitsyn@gmail.com>
- *
- * This work is licensed under the terms of the GNU GPL, version 2.  See
- * the COPYING file in the top-level directory.
- */
+#ifndef _SPY_ASM_VCPU_H
+#define _SPY_ASM_VCPU_H
 
-#ifndef _JAILHOUSE_ASM_VCPU_H
-#define _JAILHOUSE_ASM_VCPU_H
-
-#include <jailhouse/cell.h>
-#include <jailhouse/cell-config.h>
-#include <jailhouse/entry.h>
-#include <jailhouse/paging.h>
-#include <jailhouse/percpu.h>
+#include <spy/target.h>
+#include <spy/target-config.h>
+#include <spy/entry.h>
+#include <spy/paging.h>
+#include <spy/percpu.h>
 #include <asm/processor.h>
 
 #define X86_CR0_HOST_STATE \
@@ -42,15 +30,15 @@ int vcpu_early_init(void);
 
 int vcpu_vendor_early_init(void);
 
-int vcpu_cell_init(struct cell *cell);
-int vcpu_vendor_cell_init(struct cell *cell);
+int vcpu_target_init(struct target *target);
+int vcpu_vendor_target_init(struct target *target);
 
-int vcpu_map_memory_region(struct cell *cell,
-			   const struct jailhouse_memory *mem);
-int vcpu_unmap_memory_region(struct cell *cell,
-			     const struct jailhouse_memory *mem);
-void vcpu_cell_exit(struct cell *cell);
-void vcpu_vendor_cell_exit(struct cell *cell);
+int vcpu_map_memory_region(struct target *target,
+			   const struct spy_memory *mem);
+int vcpu_unmap_memory_region(struct target *target,
+			     const struct spy_memory *mem);
+void vcpu_target_exit(struct target *target);
+void vcpu_vendor_target_exit(struct target *target);
 
 int vcpu_init(struct per_cpu *cpu_data);
 void vcpu_exit(struct per_cpu *cpu_data);

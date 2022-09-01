@@ -10,7 +10,7 @@
  * the COPYING file in the top-level directory.
  */
 
-#include <jailhouse/paging.h>
+#include <spy/paging.h>
 
 extern const struct paging x86_64_paging[];
 extern const struct paging pae_paging[];

@@ -1,17 +1,3 @@
-/*
- * Jailhouse, a Linux-based partitioning hypervisor
- *
- * Copyright (c) Siemens AG, 2013-2016
- * Copyright (c) Valentine Sinitsyn, 2014
- *
- * Authors:
- *  Jan Kiszka <jan.kiszka@siemens.com>
- *  Valentine Sinitsyn <valentine.sinitsyn@gmail.com>
- *
- * This work is licensed under the terms of the GNU GPL, version 2.  See
- * the COPYING file in the top-level directory.
- */
-
 #include <spy/entry.h>
 #include <spy/paging.h>
 #include <spy/processor.h>
@@ -329,63 +315,63 @@ int vcpu_vendor_early_init(void)
 		msr_bitmap[VMX_MSR_BMP_0000_WRITE][MSR_X2APIC_ICR/8] = 0x01;
 	}
 
-	return vcpu_cell_init(&root_cell);
+	return vcpu_target_init(&root_target);
 }
 
 unsigned long arch_paging_gphys2phys(unsigned long gphys, unsigned long flags)
 {
-	return paging_virt2phys(&this_cell()->arch.vmx.ept_structs, gphys,
+	return paging_virt2phys(&this_target()->arch.vmx.ept_structs, gphys,
 				flags);
 }
 
-int vcpu_vendor_cell_init(struct cell *cell)
+int vcpu_vendor_target_init(struct target *target)
 {
-	/* build root EPT of cell */
-	cell->arch.vmx.ept_structs.root_paging = ept_paging;
-	cell->arch.vmx.ept_structs.root_table =
-		(page_table_t)cell->arch.root_table_page;
+	/* build root EPT of target */
+	target->arch.vmx.ept_structs.root_paging = ept_paging;
+	target->arch.vmx.ept_structs.root_table =
+		(page_table_t)target->arch.root_table_page;
 
 	/* Map the special APIC access page into the guest's physical address
 	 * space at the default address (XAPIC_BASE) */
-	return paging_create(&cell->arch.vmx.ept_structs,
+	return paging_create(&target->arch.vmx.ept_structs,
 			     paging_hvirt2phys(apic_access_page),
 			     PAGE_SIZE, XAPIC_BASE,
 			     EPT_FLAG_READ | EPT_FLAG_WRITE | EPT_FLAG_WB_TYPE,
 			     PAGING_NON_COHERENT | PAGING_NO_HUGE);
 }
 
-int vcpu_map_memory_region(struct cell *cell,
+int vcpu_map_memory_region(struct target *target,
 			   const struct spy_memory *mem)
 {
 	u64 phys_start = mem->phys_start;
 	unsigned long access_flags = EPT_FLAG_WB_TYPE;
 	unsigned long paging_flags = PAGING_NON_COHERENT | PAGING_HUGE;
 
-	if (mem->flags & JAILHOUSE_MEM_READ)
+	if (mem->flags & SPY_MEM_READ)
 		access_flags |= EPT_FLAG_READ;
-	if (mem->flags & JAILHOUSE_MEM_WRITE)
+	if (mem->flags & SPY_MEM_WRITE)
 		access_flags |= EPT_FLAG_WRITE;
-	if (mem->flags & JAILHOUSE_MEM_EXECUTE)
+	if (mem->flags & SPY_MEM_EXECUTE)
 		access_flags |= EPT_FLAG_EXECUTE;
-	if (mem->flags & JAILHOUSE_MEM_COMM_REGION)
-		phys_start = paging_hvirt2phys(&cell->comm_page);
-	if (mem->flags & JAILHOUSE_MEM_NO_HUGEPAGES)
+	if (mem->flags & SPY_MEM_COMM_REGION)
+		phys_start = paging_hvirt2phys(&target->comm_page);
+	if (mem->flags & SPY_MEM_NO_HUGEPAGES)
 		paging_flags &= ~PAGING_HUGE;
 
-	return paging_create(&cell->arch.vmx.ept_structs, phys_start, mem->size,
+	return paging_create(&target->arch.vmx.ept_structs, phys_start, mem->size,
 			     mem->virt_start, access_flags, paging_flags);
 }
 
-int vcpu_unmap_memory_region(struct cell *cell,
+int vcpu_unmap_memory_region(struct target *target,
 			     const struct spy_memory *mem)
 {
-	return paging_destroy(&cell->arch.vmx.ept_structs, mem->virt_start,
+	return paging_destroy(&target->arch.vmx.ept_structs, mem->virt_start,
 			      mem->size, PAGING_NON_COHERENT);
 }
 
-void vcpu_vendor_cell_exit(struct cell *cell)
+void vcpu_vendor_target_exit(struct target *target)
 {
-	paging_destroy(&cell->arch.vmx.ept_structs, XAPIC_BASE, PAGE_SIZE,
+	paging_destroy(&target->arch.vmx.ept_structs, XAPIC_BASE, PAGE_SIZE,
 		       PAGING_NON_COHERENT);
 }
 
@@ -445,19 +431,19 @@ unsigned long vcpu_vendor_get_guest_cr4(void)
 		(vmcs_read64(GUEST_CR4) & ~host_mask);
 }
 
-static bool vmx_set_cell_config(void)
+static bool vmx_set_target_config(void)
 {
-	struct cell *cell = this_cell();
+	struct target *target = this_target();
 	u8 *io_bitmap;
 	bool ok = true;
 
-	io_bitmap = cell->arch.io_bitmap;
+	io_bitmap = target->arch.io_bitmap;
 	ok &= vmcs_write64(IO_BITMAP_A, paging_hvirt2phys(io_bitmap));
 	ok &= vmcs_write64(IO_BITMAP_B,
 			   paging_hvirt2phys(io_bitmap + PAGE_SIZE));
 
 	ok &= vmcs_write64(EPT_POINTER,
-		paging_hvirt2phys(cell->arch.vmx.ept_structs.root_table) |
+		paging_hvirt2phys(target->arch.vmx.ept_structs.root_table) |
 		EPT_TYPE_WRITEBACK | EPT_PAGE_WALK_LEN);
 
 	return ok;
@@ -584,7 +570,7 @@ static bool vmcs_setup(void)
 	ok &= vmcs_write64(APIC_ACCESS_ADDR,
 			   paging_hvirt2phys(apic_access_page));
 
-	ok &= vmx_set_cell_config();
+	ok &= vmx_set_target_config();
 
 	/* see vmx_handle_exception_nmi for the interception reason */
 	ok &= vmcs_write32(EXCEPTION_BITMAP,
@@ -669,7 +655,7 @@ int vcpu_init(struct per_cpu *cpu_data)
 	 * Bring CR0 and CR4 into well-defined states. If they do not match
 	 * with VMX requirements, vmxon will fail.
 	 * X86_CR4_OSXSAVE is enabled if available so that xsetbv can be
-	 * executed on behalf of a cell.
+	 * executed on behalf of a target.
 	 */
 	write_cr0(X86_CR0_HOST_STATE);
 	write_cr4(X86_CR4_HOST_STATE | X86_CR4_VMXE |
@@ -807,7 +793,7 @@ void vcpu_vendor_reset(unsigned int sipi_vector)
 		/* only cleared on hard reset */
 		ok &= vmcs_write64(GUEST_IA32_DEBUGCTL, 0);
 
-		reset_addr = this_cell()->config->cpu_reset_address;
+		reset_addr = this_target()->config->cpu_reset_address;
 
 		ok &= vmcs_write64(GUEST_RIP, reset_addr & 0xffff);
 
@@ -881,7 +867,7 @@ void vcpu_vendor_reset(unsigned int sipi_vector)
 	val &= ~VM_ENTRY_IA32E_MODE;
 	ok &= vmcs_write32(VM_ENTRY_CONTROLS, val);
 
-	ok &= vmx_set_cell_config();
+	ok &= vmx_set_target_config();
 
 	if (!ok) {
 		panic_printk("FATAL: CPU reset failed\n");
@@ -908,7 +894,7 @@ void vcpu_nmi_handler(void)
 
 void vcpu_park(void)
 {
-#ifdef CONFIG_CRASH_CELL_ON_PANIC
+#ifdef CONFIG_CRASH_TARGET_ON_PANIC
 	if (this_cpu_public()->failed) {
 		vmcs_write64(GUEST_RIP, 0);
 		return;
@@ -937,10 +923,10 @@ static void vmx_handle_exception_nmi(void)
 	u32 intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
 
 	if ((intr_info & INTR_INFO_INTR_TYPE_MASK) == INTR_TYPE_NMI_INTR) {
-		cpu_public->stats[JAILHOUSE_CPU_STAT_VMEXITS_MANAGEMENT]++;
+		cpu_public->stats[SPY_CPU_STAT_VMEXITS_MANAGEMENT]++;
 		asm volatile("int %0" : : "i" (NMI_VECTOR));
 	} else {
-		cpu_public->stats[JAILHOUSE_CPU_STAT_VMEXITS_EXCEPTION]++;
+		cpu_public->stats[SPY_CPU_STAT_VMEXITS_EXCEPTION]++;
 		/*
 		 * Reinject the event straight away. We only intercept #DB and
 		 * #AC to prevent that malicious guests can trigger infinite
@@ -1161,14 +1147,14 @@ void vcpu_handle_exit(struct per_cpu *cpu_data)
 	u32 reason = vmcs_read32(VM_EXIT_REASON);
 	u32 *stats = cpu_data->public.stats;
 
-	stats[JAILHOUSE_CPU_STAT_VMEXITS_TOTAL]++;
+	stats[SPY_CPU_STAT_VMEXITS_TOTAL]++;
 
 	switch (reason) {
 	case EXIT_REASON_EXCEPTION_NMI:
 		vmx_handle_exception_nmi();
 		return;
 	case EXIT_REASON_PREEMPTION_TIMER:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_MANAGEMENT]++;
+		stats[SPY_CPU_STAT_VMEXITS_MANAGEMENT]++;
 		vmx_check_events();
 		return;
 	case EXIT_REASON_CPUID:
@@ -1178,41 +1164,41 @@ void vcpu_handle_exit(struct per_cpu *cpu_data)
 		vcpu_handle_hypercall();
 		return;
 	case EXIT_REASON_CR_ACCESS:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_CR]++;
+		stats[SPY_CPU_STAT_VMEXITS_CR]++;
 		if (vmx_handle_cr())
 			return;
 		break;
 	case EXIT_REASON_MSR_READ:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+		stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 		if (vcpu_handle_msr_read())
 			return;
 		break;
 	case EXIT_REASON_MSR_WRITE:
 		if (cpu_data->guest_regs.rcx == MSR_IA32_PERF_GLOBAL_CTRL) {
 			/* ignore writes */
-			stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+			stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 			vcpu_skip_emulated_instruction(X86_INST_LEN_WRMSR);
 			return;
 		} else if (vcpu_handle_msr_write())
 			return;
 		break;
 	case EXIT_REASON_APIC_ACCESS:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_XAPIC]++;
+		stats[SPY_CPU_STAT_VMEXITS_XAPIC]++;
 		if (vmx_handle_apic_access())
 			return;
 		break;
 	case EXIT_REASON_XSETBV:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_XSETBV]++;
+		stats[SPY_CPU_STAT_VMEXITS_XSETBV]++;
 		if (vmx_handle_xsetbv())
 			return;
 		break;
 	case EXIT_REASON_IO_INSTRUCTION:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_PIO]++;
+		stats[SPY_CPU_STAT_VMEXITS_PIO]++;
 		if (vcpu_handle_io_access())
 			return;
 		break;
 	case EXIT_REASON_EPT_VIOLATION:
-		stats[JAILHOUSE_CPU_STAT_VMEXITS_MMIO]++;
+		stats[SPY_CPU_STAT_VMEXITS_MMIO]++;
 		if (vcpu_handle_mmio_access())
 			return;
 		break;

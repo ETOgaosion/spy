@@ -13,7 +13,7 @@
 #include <asm/processor.h>
 #include <asm/asm-defines.h>
 
-/* Entry point for Linux loader module on JAILHOUSE_ENABLE */
+/* Entry point for Linux loader module on SPY_ENABLE */
 	.text
 	.globl arch_entry
 arch_entry:

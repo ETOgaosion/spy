@@ -14,8 +14,8 @@
  * Copyright (c) Linux kernel developers, 2014
  */
 
-#ifndef _JAILHOUSE_GEN_DEFINES_H
-#define _JAILHOUSE_GEN_DEFINES_H
+#ifndef _SPY_GEN_DEFINES_H
+#define _SPY_GEN_DEFINES_H
 
 #define DEFINE(sym, val) \
         asm volatile("\n=>" #sym " %0 " #val : : "i" (val))

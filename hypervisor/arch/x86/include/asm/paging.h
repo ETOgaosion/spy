@@ -10,11 +10,11 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef _JAILHOUSE_ASM_PAGING_H
-#define _JAILHOUSE_ASM_PAGING_H
+#ifndef _SPY_ASM_PAGING_H
+#define _SPY_ASM_PAGING_H
 
-#include <jailhouse/types.h>
-#include <jailhouse/utils.h>
+#include <spy/types.h>
+#include <spy/utils.h>
 #include <asm/processor.h>
 
 #define PAGE_SHIFT		12
@@ -48,7 +48,7 @@
 #define REMAP_BASE		0xffffff8000000000UL
 #define NUM_REMAP_BITMAP_PAGES	4
 
-#define CELL_ROOT_PT_PAGES	1
+#define TARGET_ROOT_PT_PAGES	1
 
 #ifndef __ASSEMBLY__
 
@@ -69,4 +69,4 @@ static inline void arch_paging_flush_cpu_caches(void *addr, long size)
 
 #endif /* !__ASSEMBLY__ */
 
-#endif /* !_JAILHOUSE_ASM_PAGING_H */
+#endif /* !_SPY_ASM_PAGING_H */

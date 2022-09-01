@@ -12,7 +12,7 @@
  * the COPYING file in the top-level directory.
  */
 
-#include <jailhouse/cell.h>
+#include <spy/target.h>
 #include <asm/svm.h>
 #include <asm/vmx.h>
 

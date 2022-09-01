@@ -1,17 +1,3 @@
-/*
- * Jailhouse, a Linux-based partitioning hypervisor
- *
- * Copyright (c) Siemens AG, 2013
- * Copyright (c) Valentine Sinitsyn, 2014
- *
- * Authors:
- *  Jan Kiszka <jan.kiszka@siemens.com>
- *  Valentine Sinitsyn <valentine.sinitsyn@gmail.com>
- *
- * This work is licensed under the terms of the GNU GPL, version 2.  See
- * the COPYING file in the top-level directory.
- */
-
 #include <spy/control.h>
 #include <spy/mmio.h>
 #include <spy/paging.h>
@@ -27,7 +13,7 @@
 #include <asm/vcpu.h>
 
 #define for_each_pio_region(pio, config, counter)		\
-	for ((pio) = spy_cell_pio(config), (counter) = 0;	\
+	for ((pio) = spy_target_pio(config), (counter) = 0;	\
 	     (counter) < (config)->num_pio_regions;		\
 	     (pio)++, (counter)++)
 
@@ -46,7 +32,7 @@ int vcpu_early_init(void)
 	if (err)
 		return err;
 
-	/* Map guest parking code (shared between cells and CPUs) */
+	/* Map guest parking code (shared between targets and CPUs) */
 	return paging_create(&parking_pt, paging_hvirt2phys(parking_code),
 			     PAGE_SIZE, 0, PAGE_READONLY_FLAGS | PAGE_FLAG_US,
 			     PAGING_NON_COHERENT | PAGING_NO_HUGE);
@@ -92,86 +78,86 @@ static void pio_allow_access(u8 *bm, const struct spy_pio *pio,
 		access_method(start_bit, (unsigned long*)bm);
 }
 
-int vcpu_cell_init(struct cell *cell)
+int vcpu_target_init(struct target *target)
 {
 	const unsigned int io_bitmap_pages = vcpu_vendor_get_io_bitmap_pages();
 	const struct spy_pio *pio;
 	unsigned int n, pm_timer_addr;
 	int err;
 
-	cell->arch.io_bitmap = page_alloc(&mem_pool, io_bitmap_pages);
-	if (!cell->arch.io_bitmap)
+	target->arch.io_bitmap = page_alloc(&mem_pool, io_bitmap_pages);
+	if (!target->arch.io_bitmap)
 		return -ENOMEM;
 
-	err = vcpu_vendor_cell_init(cell);
+	err = vcpu_vendor_target_init(target);
 	if (err) {
-		page_free(&mem_pool, cell->arch.io_bitmap, io_bitmap_pages);
+		page_free(&mem_pool, target->arch.io_bitmap, io_bitmap_pages);
 		return err;
 	}
 
 	/* initialize io bitmap to trap all accesses */
-	memset(cell->arch.io_bitmap, -1, io_bitmap_pages * PAGE_SIZE);
+	memset(target->arch.io_bitmap, -1, io_bitmap_pages * PAGE_SIZE);
 
-	/* cells have no access to i8042, unless the port is whitelisted */
-	cell->arch.pio_i8042_allowed = false;
+	/* targets have no access to i8042, unless the port is whitelisted */
+	target->arch.pio_i8042_allowed = false;
 
-	for_each_pio_region(pio, cell->config, n) {
-		pio_allow_access(cell->arch.io_bitmap, pio, true);
+	for_each_pio_region(pio, target->config, n) {
+		pio_allow_access(target->arch.io_bitmap, pio, true);
 
 		/* moderate i8042 only if the config allows it */
 		if (pio->base <= I8042_CMD_REG &&
 		    pio->base + pio->length > I8042_CMD_REG)
-			cell->arch.pio_i8042_allowed = true;
+			target->arch.pio_i8042_allowed = true;
 	}
 
 	/* but always intercept access to i8042 command register */
-	cell->arch.io_bitmap[I8042_CMD_REG / 8] |= 1 << (I8042_CMD_REG % 8);
+	target->arch.io_bitmap[I8042_CMD_REG / 8] |= 1 << (I8042_CMD_REG % 8);
 
-	if (cell != &root_cell) {
+	if (target != &root_target) {
 		/*
-		 * Shrink PIO access of root cell corresponding to new cell's
+		 * Shrink PIO access of root target corresponding to new target's
 		 * access rights.
 		 */
-		for_each_pio_region(pio, cell->config, n)
-			pio_allow_access(root_cell.arch.io_bitmap, pio, false);
+		for_each_pio_region(pio, target->config, n)
+			pio_allow_access(root_target.arch.io_bitmap, pio, false);
 	}
 
 	/* permit access to the PM timer if there is any */
 	pm_timer_addr = system_config->platform_info.x86.pm_timer_address;
 	if (pm_timer_addr)
 		for (n = 0; n < 4; n++, pm_timer_addr++)
-			cell->arch.io_bitmap[pm_timer_addr / 8] &=
+			target->arch.io_bitmap[pm_timer_addr / 8] &=
 				~(1 << (pm_timer_addr % 8));
 
 	return 0;
 }
 
-void vcpu_cell_exit(struct cell *cell)
+void vcpu_target_exit(struct target *target)
 {
-	const struct spy_pio *cell_wl, *root_wl;
+	const struct spy_pio *target_wl, *root_wl;
 	unsigned int interval_start, interval_end, m, n;
 	struct spy_pio refund;
 
-	/* Hand back ports to the root cell. But only hand back those ports
-	 * that overlap with the root cell's config. This is done by pairwise
-	 * comparison of the cell's and the root cell's whitelist entries. */
-	for_each_pio_region(cell_wl, cell->config, m)
-		for_each_pio_region(root_wl, root_cell.config, n) {
-			interval_start = MAX(cell_wl->base, root_wl->base);
-			interval_end = MIN(cell_wl->base + cell_wl->length,
+	/* Hand back ports to the root target. But only hand back those ports
+	 * that overlap with the root target's config. This is done by pairwise
+	 * comparison of the target's and the root target's whitelist entries. */
+	for_each_pio_region(target_wl, target->config, m)
+		for_each_pio_region(root_wl, root_target.config, n) {
+			interval_start = MAX(target_wl->base, root_wl->base);
+			interval_end = MIN(target_wl->base + target_wl->length,
 					   root_wl->base + root_wl->length);
 			if (interval_start < interval_end) {
 				refund.base = interval_start;
 				refund.length = interval_end - interval_start;
-				pio_allow_access(root_cell.arch.io_bitmap,
+				pio_allow_access(root_target.arch.io_bitmap,
 						 &refund, true);
 			}
 		}
 
-	page_free(&mem_pool, cell->arch.io_bitmap,
+	page_free(&mem_pool, target->arch.io_bitmap,
 		  vcpu_vendor_get_io_bitmap_pages());
 
-	vcpu_vendor_cell_exit(cell);
+	vcpu_vendor_target_exit(target);
 }
 
 void vcpu_handle_hypercall(void)
@@ -199,7 +185,7 @@ void vcpu_handle_hypercall(void)
 		       cpu_id, code,
 		       vcpu_vendor_get_rip() - X86_INST_LEN_HYPERCALL);
 
-	if (code == JAILHOUSE_HC_DISABLE && guest_regs->rax == 0) {
+	if (code == SPY_HC_DISABLE && guest_regs->rax == 0) {
 		/*
 		 * Restore full per_cpu region access so that we can switch
 		 * back to the common stack mapping and to Linux page tables.
@@ -303,11 +289,11 @@ bool vcpu_handle_msr_read(void)
 		x2apic_handle_read();
 		break;
 	case MSR_IA32_PAT:
-		cpu_data->public.stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+		cpu_data->public.stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 		set_rdmsr_value(&cpu_data->guest_regs, cpu_data->pat);
 		break;
 	case MSR_IA32_MTRR_DEF_TYPE:
-		cpu_data->public.stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+		cpu_data->public.stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 		set_rdmsr_value(&cpu_data->guest_regs,
 				cpu_data->mtrr_def_type);
 		break;
@@ -333,7 +319,7 @@ bool vcpu_handle_msr_write(void)
 			return false;
 		break;
 	case MSR_IA32_PAT:
-		cpu_data->public.stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+		cpu_data->public.stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 		val = get_wrmsr_value(&cpu_data->guest_regs);
 		for (bit_pos = 0; bit_pos < 64; bit_pos += 8) {
 			pa = (val >> bit_pos) & 0xff;
@@ -348,7 +334,7 @@ bool vcpu_handle_msr_write(void)
 			vcpu_vendor_set_guest_pat(val);
 		break;
 	case MSR_IA32_MTRR_DEF_TYPE:
-		cpu_data->public.stats[JAILHOUSE_CPU_STAT_VMEXITS_MSR_OTHER]++;
+		cpu_data->public.stats[SPY_CPU_STAT_VMEXITS_MSR_OTHER]++;
 		/*
 		 * This only emulates the difference between MTRRs enabled
 		 * and disabled. When disabled, we turn off all caching by
@@ -377,16 +363,16 @@ void vcpu_handle_cpuid(void)
 	union registers *guest_regs = &this_cpu_data()->guest_regs;
 	u32 function = guest_regs->rax;
 
-	this_cpu_data()->public.stats[JAILHOUSE_CPU_STAT_VMEXITS_CPUID]++;
+	this_cpu_data()->public.stats[SPY_CPU_STAT_VMEXITS_CPUID]++;
 
 	switch (function) {
-	case JAILHOUSE_CPUID_SIGNATURE:
-		guest_regs->rax = JAILHOUSE_CPUID_FEATURES;
+	case SPY_CPUID_SIGNATURE:
+		guest_regs->rax = SPY_CPUID_FEATURES;
 		guest_regs->rbx = *(u32 *)signature;
 		guest_regs->rcx = *(u32 *)(signature + 4);
 		guest_regs->rdx = *(u32 *)(signature + 8);
 		break;
-	case JAILHOUSE_CPUID_FEATURES:
+	case SPY_CPUID_FEATURES:
 		guest_regs->rax = 0;
 		guest_regs->rbx = 0;
 		guest_regs->rcx = 0;
@@ -402,7 +388,7 @@ void vcpu_handle_cpuid(void)
 		cpuid((u32 *)&guest_regs->rax, (u32 *)&guest_regs->rbx,
 		      (u32 *)&guest_regs->rcx, (u32 *)&guest_regs->rdx);
 		if (function == 0x01) {
-			if (this_cell() != &root_cell) {
+			if (this_target() != &root_target) {
 				guest_regs->rcx &= ~X86_FEATURE_VMX;
 				guest_regs->rcx |= X86_FEATURE_HYPERVISOR;
 			}
@@ -411,7 +397,7 @@ void vcpu_handle_cpuid(void)
 			if (vcpu_vendor_get_guest_cr4() & X86_CR4_OSXSAVE)
 				guest_regs->rcx |= X86_FEATURE_OSXSAVE;
 		} else if (function == 0x80000001) {
-			if (this_cell() != &root_cell)
+			if (this_target() != &root_target)
 				guest_regs->rcx &= ~X86_FEATURE_SVM;
 		}
 		break;

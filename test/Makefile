@@ -1,5 +1,9 @@
+#
+# Created by 蓝色空间 on 2022/8/31.
+#
+
 obj-m += test.o
-CARGS = -I /lib/modules/$(shell uname -r)/arch/x86/include/
+CARGS = -I /lib/modules/$(shell uname -r)/build/arch/x86/include/
 all:
 	make ARCH=x86 -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 	rm -f .*.cmd *.cmd *.mod *.mod.c *.o *.symvers *.order

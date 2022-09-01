@@ -14,8 +14,8 @@
  * Copyright (c) Linux kernel developers, 2014
  */
 
-#ifndef _JAILHOUSE_ASM_SPINLOCK_H
-#define _JAILHOUSE_ASM_SPINLOCK_H
+#ifndef _SPY_ASM_SPINLOCK_H
+#define _SPY_ASM_SPINLOCK_H
 
 #include <asm/processor.h>
 
@@ -46,4 +46,4 @@ static inline void spin_unlock(spinlock_t *lock)
 		: "memory", "cc");
 }
 
-#endif /* !_JAILHOUSE_ASM_SPINLOCK_H */
+#endif /* !_SPY_ASM_SPINLOCK_H */

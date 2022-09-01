@@ -10,15 +10,15 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef _JAILHOUSE_PAGING_H
-#define _JAILHOUSE_PAGING_H
+#ifndef _SPY_PAGING_H
+#define _SPY_PAGING_H
 
 /**
  * @defgroup Paging Page Management Subsystem
  *
  * The page management subsystem provides services for allocating physical
  * pages for the hypervisor and reserving remapping pages in the remapping
- * area. It further offers functions to map pages for the hypervisor or cells,
+ * area. It further offers functions to map pages for the hypervisor or targets,
  * walk existing mappings or destroy them again.
  *
  * @{
@@ -45,8 +45,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include <jailhouse/entry.h>
-#include <jailhouse/types.h>
+#include <spy/entry.h>
+#include <spy/types.h>
 
 /**
  * @ingroup Paging
@@ -189,7 +189,7 @@ struct paging_structures {
 
 /**
  * Describes the root of hierarchical paging structures managed by a guest
- * (cell).
+ * (target).
  */
 struct guest_paging_structures {
 	/** Pointer to array of paging parameters and callbacks, first element
@@ -249,7 +249,7 @@ unsigned long paging_virt2phys(const struct paging_structures *pg_structs,
 			       unsigned long virt, unsigned long flags);
 
 /**
- * Translate guest-physical (cell) address into host-physical address.
+ * Translate guest-physical (target) address into host-physical address.
  * @param gphys		Guest-physical address to translate.
  * @param flags		Access flags to validate during the translation.
  *
@@ -375,4 +375,4 @@ void paging_dump_stats(const char *when);
 #endif /* !__ASSEMBLY__ */
 
 /** @} */
-#endif /* !_JAILHOUSE_PAGING_H */
+#endif /* !_SPY_PAGING_H */

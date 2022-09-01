@@ -17,10 +17,10 @@
  * Copyright (c) Linux kernel developers, 2013
  */
 
-#ifndef _JAILHOUSE_ASM_PROCESSOR_H
-#define _JAILHOUSE_ASM_PROCESSOR_H
+#ifndef _SPY_ASM_PROCESSOR_H
+#define _SPY_ASM_PROCESSOR_H
 
-#include <jailhouse/types.h>
+#include <spy/types.h>
 
 /* leaf 0x01, ECX */
 #define X86_FEATURE_VMX					(1 << 5)
@@ -372,4 +372,4 @@ void disable_irq(void);
 /** @} */
 #endif /* !__ASSEMBLY__ */
 
-#endif /* !_JAILHOUSE_ASM_PROCESSOR_H */
+#endif /* !_SPY_ASM_PROCESSOR_H */

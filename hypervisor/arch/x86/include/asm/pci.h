@@ -11,10 +11,10 @@
  * the COPYING file in the top-level directory.
  */
 
-#ifndef _JAILHOUSE_ASM_PCI_H
-#define _JAILHOUSE_ASM_PCI_H
+#ifndef _SPY_ASM_PCI_H
+#define _SPY_ASM_PCI_H
 
-#include <jailhouse/types.h>
+#include <spy/types.h>
 #include <asm/apic.h>
 
 /* --- PCI configuration ports --- */
@@ -39,4 +39,4 @@ x86_pci_translate_msi(struct pci_device *device, unsigned int vector,
 		      unsigned int legacy_vectors, union x86_msi_vector msi);
 
 /** @} */
-#endif /* !_JAILHOUSE_ASM_PCI_H */
+#endif /* !_SPY_ASM_PCI_H */
