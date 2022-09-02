@@ -14,7 +14,6 @@ INCLUDE		= -Iinclude/ -I$(base_dir)/lib/ -I$(base_dir)/include/spy
 
 all :
 	$(CC) $(INCLUDE) $(SRC) -o spy
-	-rm *.o functions/*.o
 
 clean:
-	-rm *.o functions/*.o spy
+	-rm spy

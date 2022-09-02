@@ -5,7 +5,7 @@
 #ifndef SPY_TARGET_H
 #define SPY_TARGET_H
 
-#include "include/types.h"
+#include "types.h"
 
 int target_create(int argc, char *argv[]);
 int target_list(int argc, char *argv[]);
