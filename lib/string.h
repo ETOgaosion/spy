@@ -8,8 +8,6 @@
 #define STR_ENABLE              6953475863468
 #define STR_DISABLE             229463237649593
 #define STR_TARGET              6954048093548
-#define STR_CONSOLE             229462175725400
-#define STR_CONFIG              6953399250043
 #define STR_VERSION             249805560270004805
 #define STR_V                   5861512
 #define STR_HELP                6951207451432

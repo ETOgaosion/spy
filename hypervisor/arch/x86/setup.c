@@ -25,15 +25,13 @@ extern u8 irq_entry[];
 unsigned long cache_line_size;
 static u32 idt[NUM_IDT_DESC * 4];
 
-static void set_idt_int_gate(unsigned int vector, unsigned long entry)
-{
+static void set_idt_int_gate(unsigned int vector, unsigned long entry) {
 	idt[vector * 4] = (entry & 0xffff) | ((GDT_DESC_CODE * 8) << 16);
 	idt[vector * 4 + 1] = IDT_PRESENT_INT | (entry & 0xffff0000);
 	idt[vector * 4 + 2] = entry >> 32;
 }
 
-int arch_init_early(void)
-{
+int arch_init_early(void) {
 	unsigned long entry;
 	unsigned int vector;
 	int err;
@@ -65,8 +63,7 @@ int arch_init_early(void)
  * We need a generic struct segment for x86 that is converted to VMX/SVM one
  * in the vmx.c/svm.c.
  */
-static void read_descriptor(struct per_cpu *cpu_data, struct segment *seg)
-{
+static void read_descriptor(struct per_cpu *cpu_data, struct segment *seg) {
 	u64 *desc = (u64 *)(cpu_data->linux_gdtr.base +
 			    (seg->selector & 0xfff8));
 
@@ -88,8 +85,7 @@ static void read_descriptor(struct per_cpu *cpu_data, struct segment *seg)
 	}
 }
 
-static void set_cs(u16 cs)
-{
+static void set_cs(u16 cs) {
 	asm volatile(
 		"lea 1f(%%rip),%%rax\n\t"
 		"push %0\n\t"
@@ -99,8 +95,7 @@ static void set_cs(u16 cs)
 		: : "m" (cs) : "rax");
 }
 
-int arch_cpu_init(struct per_cpu *cpu_data)
-{
+int arch_cpu_init(struct per_cpu *cpu_data) {
 	struct desc_table_reg dtr;
 	int err, n;
 
@@ -218,8 +213,7 @@ int arch_cpu_init(struct per_cpu *cpu_data)
 	return vcpu_init(cpu_data);
 }
 
-void __attribute__((noreturn)) arch_cpu_activate_vmm(void)
-{
+void __attribute__((noreturn)) arch_cpu_activate_vmm(void) {
 	unsigned int cpu_id = this_cpu_id();
 
 	/*
@@ -236,8 +230,7 @@ void __attribute__((noreturn)) arch_cpu_activate_vmm(void)
 	vcpu_activate_vmm();
 }
 
-void arch_cpu_restore(unsigned int cpu_id, int return_code)
-{
+void arch_cpu_restore(unsigned int cpu_id, int return_code) {
 	static spinlock_t tss_lock;
 	struct per_cpu *cpu_data = per_cpu(cpu_id);
 	unsigned int tss_idx;

@@ -78,8 +78,7 @@ struct per_cpu {
  *
  * @return Pointer to per-CPU data structure.
  */
-static inline struct per_cpu *this_cpu_data(void)
-{
+static inline struct per_cpu *this_cpu_data(void) {
 	return (struct per_cpu *)LOCAL_CPU_BASE;
 }
 
@@ -88,8 +87,7 @@ static inline struct per_cpu *this_cpu_data(void)
  *
  * @return Pointer to public per-CPU data structure.
  */
-static inline struct public_per_cpu *this_cpu_public(void)
-{
+static inline struct public_per_cpu *this_cpu_public(void) {
 	return &this_cpu_data()->public;
 }
 
@@ -98,8 +96,7 @@ static inline struct public_per_cpu *this_cpu_public(void)
  *
  * @return CPU ID.
  */
-static inline unsigned int this_cpu_id(void)
-{
+static inline unsigned int this_cpu_id(void) {
 	return this_cpu_public()->cpu_id;
 }
 
@@ -108,8 +105,7 @@ static inline unsigned int this_cpu_id(void)
  *
  * @return Pointer to target.
  */
-static inline struct target *this_target(void)
-{
+static inline struct target *this_target(void) {
 	return this_cpu_public()->target;
 }
 
@@ -119,8 +115,7 @@ static inline struct target *this_target(void)
  *
  * @return Pointer to per-CPU data structure.
  */
-static inline struct per_cpu *per_cpu(unsigned int cpu)
-{
+static inline struct per_cpu *per_cpu(unsigned int cpu) {
 	return (struct per_cpu *)(__page_pool + cpu * sizeof(struct per_cpu));
 }
 
@@ -130,8 +125,7 @@ static inline struct per_cpu *per_cpu(unsigned int cpu)
  *
  * @return Pointer to public per-CPU data structure.
  */
-static inline struct public_per_cpu *public_per_cpu(unsigned int cpu)
-{
+static inline struct public_per_cpu *public_per_cpu(unsigned int cpu) {
 	return &per_cpu(cpu)->public;
 }
 

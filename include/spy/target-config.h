@@ -101,7 +101,7 @@ struct spy_system {
 	__u16 revision;
 	__u32 flags;
 
-	/** Jailhouse's location in memory */
+	/** Spy's location in memory */
 	struct spy_memory hypervisor_memory;
 	struct {
         struct {
@@ -112,8 +112,7 @@ struct spy_system {
 } __attribute__((packed));
 
 static inline __u32
-spy_target_config_size(struct spy_target_desc *target)
-{
+spy_target_config_size(struct spy_target_desc *target) {
 	return sizeof(struct spy_target_desc) +
 		target->cpu_set_size +
 		target->num_memory_regions * sizeof(struct spy_memory) +
@@ -122,37 +121,32 @@ spy_target_config_size(struct spy_target_desc *target)
 }
 
 static inline __u32
-spy_system_config_size(struct spy_system *system)
-{
+spy_system_config_size(struct spy_system *system) {
 	return sizeof(*system) - sizeof(system->root_target) +
 		spy_target_config_size(&system->root_target);
 }
 
 static inline const unsigned long *
-spy_target_cpu_set(const struct spy_target_desc *target)
-{
+spy_target_cpu_set(const struct spy_target_desc *target) {
 	return (const unsigned long *)((const void *)target +
 		sizeof(struct spy_target_desc));
 }
 
 static inline const struct spy_memory *
-spy_target_mem_regions(const struct spy_target_desc *target)
-{
+spy_target_mem_regions(const struct spy_target_desc *target) {
 	return (const struct spy_memory *)
 		((void *)spy_target_cpu_set(target) + target->cpu_set_size);
 }
 
 static inline const struct spy_cache *
-spy_target_cache_regions(const struct spy_target_desc *target)
-{
+spy_target_cache_regions(const struct spy_target_desc *target) {
 	return (const struct spy_cache *)
 		((void *)spy_target_mem_regions(target) +
 		 target->num_memory_regions * sizeof(struct spy_memory));
 }
 
 static inline const struct spy_irqchip *
-spy_target_irqchips(const struct spy_target_desc *target)
-{
+spy_target_irqchips(const struct spy_target_desc *target) {
 	return (const struct spy_irqchip *)
 		((void *)spy_target_cache_regions(target) +
 		 target->num_cache_regions * sizeof(struct spy_cache));

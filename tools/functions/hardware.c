@@ -3,3 +3,5 @@
 //
 
 #include "../include/hardware.h"
+
+void hardware_check(void) {}

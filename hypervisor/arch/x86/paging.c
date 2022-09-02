@@ -6,28 +6,23 @@
 
 static struct paging hv_paging[MAX_PAGE_TABLE_LEVELS];
 
-static bool x86_64_entry_valid(pt_entry_t pte, unsigned long flags)
-{
+static bool x86_64_entry_valid(pt_entry_t pte, unsigned long flags) {
 	return (*pte & flags) == flags;
 }
 
-static unsigned long x86_64_get_flags(pt_entry_t pte)
-{
+static unsigned long x86_64_get_flags(pt_entry_t pte) {
 	return *pte & (BIT_MASK(63, 52) | BIT_MASK(11, 8) | BIT_MASK(6, 0));
 }
 
-static void x86_64_set_next_pt(pt_entry_t pte, unsigned long next_pt)
-{
+static void x86_64_set_next_pt(pt_entry_t pte, unsigned long next_pt) {
 	*pte = (next_pt & BIT_MASK(51, 12)) | PAGE_DEFAULT_FLAGS;
 }
 
-static void x86_64_clear_entry(pt_entry_t pte)
-{
+static void x86_64_clear_entry(pt_entry_t pte) {
 	*pte = PAGE_NONPRESENT_FLAGS;
 }
 
-static bool x86_64_page_table_empty(page_table_t page_table)
-{
+static bool x86_64_page_table_empty(page_table_t page_table) {
 	pt_entry_t pte;
 	unsigned int n;
 
@@ -38,68 +33,57 @@ static bool x86_64_page_table_empty(page_table_t page_table)
 }
 
 static pt_entry_t x86_64_get_entry_l4(page_table_t page_table,
-				      unsigned long virt)
-{
+				      unsigned long virt) {
 	return &page_table[(virt >> 39) & 0x1ff];
 }
 
 static pt_entry_t x86_64_get_entry_l3(page_table_t page_table,
-				      unsigned long virt)
-{
+				      unsigned long virt) {
 	return &page_table[(virt >> 30) & 0x1ff];
 }
 
 static pt_entry_t x86_64_get_entry_l2(page_table_t page_table,
-				      unsigned long virt)
-{
+				      unsigned long virt) {
 	return &page_table[(virt >> 21) & 0x1ff];
 }
 
 static pt_entry_t x86_64_get_entry_l1(page_table_t page_table,
-				      unsigned long virt)
-{
+				      unsigned long virt) {
 	return &page_table[(virt >> 12) & 0x1ff];
 }
 
 static void x86_64_set_terminal_l3(pt_entry_t pte, unsigned long phys,
-				   unsigned long flags)
-{
+				   unsigned long flags) {
 	*pte = (phys & BIT_MASK(51, 30)) | X86_FLAG_HUGEPAGE | flags;
 }
 
 static void x86_64_set_terminal_l2(pt_entry_t pte, unsigned long phys,
-				   unsigned long flags)
-{
+				   unsigned long flags) {
 	*pte = (phys & BIT_MASK(51, 21)) | X86_FLAG_HUGEPAGE | flags;
 }
 
 static void x86_64_set_terminal_l1(pt_entry_t pte, unsigned long phys,
-				   unsigned long flags)
-{
+				   unsigned long flags) {
 	*pte = (phys & BIT_MASK(51, 12)) | flags;
 }
 
-static unsigned long x86_64_get_phys_l3(pt_entry_t pte, unsigned long virt)
-{
+static unsigned long x86_64_get_phys_l3(pt_entry_t pte, unsigned long virt) {
 	if (!(*pte & X86_FLAG_HUGEPAGE))
 		return INVALID_PHYS_ADDR;
 	return (*pte & BIT_MASK(51, 30)) | (virt & BIT_MASK(29, 0));
 }
 
-static unsigned long x86_64_get_phys_l2(pt_entry_t pte, unsigned long virt)
-{
+static unsigned long x86_64_get_phys_l2(pt_entry_t pte, unsigned long virt) {
 	if (!(*pte & X86_FLAG_HUGEPAGE))
 		return INVALID_PHYS_ADDR;
 	return (*pte & BIT_MASK(51, 21)) | (virt & BIT_MASK(20, 0));
 }
 
-static unsigned long x86_64_get_phys_l1(pt_entry_t pte, unsigned long virt)
-{
+static unsigned long x86_64_get_phys_l1(pt_entry_t pte, unsigned long virt) {
 	return (*pte & BIT_MASK(51, 12)) | (virt & BIT_MASK(11, 0));
 }
 
-static unsigned long x86_64_get_next_pt(pt_entry_t pte)
-{
+static unsigned long x86_64_get_next_pt(pt_entry_t pte) {
 	return *pte & BIT_MASK(51, 12);
 }
 
@@ -144,8 +128,7 @@ const struct paging x86_64_paging[] = {
 	},
 };
 
-void arch_paging_init(void)
-{
+void arch_paging_init(void) {
 	memcpy(hv_paging, x86_64_paging, sizeof(x86_64_paging));
 	if (!(cpuid_edx(0x80000001, 0) & X86_FEATURE_GBPAGES))
 		hv_paging[1].page_size = 0;
@@ -153,29 +136,25 @@ void arch_paging_init(void)
 	hv_paging_structs.root_paging = hv_paging;
 }
 
-static bool i386_entry_valid(pt_entry_t pte, unsigned long flags)
-{
+static bool i386_entry_valid(pt_entry_t pte, unsigned long flags) {
 	return (*(u32 *)pte & flags) == flags;
 }
 
 static pt_entry_t i386_get_entry_l2(page_table_t page_table,
-				    unsigned long virt)
-{
+				    unsigned long virt) {
 	u32 *page_table32 = (u32 *)page_table;
 
 	return (pt_entry_t)&page_table32[(virt >> 22) & 0x3ff];
 }
 
 static pt_entry_t i386_get_entry_l1(page_table_t page_table,
-				    unsigned long virt)
-{
+				    unsigned long virt) {
 	u32 *page_table32 = (u32 *)page_table;
 
 	return (pt_entry_t)&page_table32[(virt >> 12) & 0x3ff];
 }
 
-static unsigned long i386_get_phys_l2(pt_entry_t pte, unsigned long virt)
-{
+static unsigned long i386_get_phys_l2(pt_entry_t pte, unsigned long virt) {
 	u32 pte32 = *(u32 *)pte;
 
 	if (!(pte32 & X86_FLAG_HUGEPAGE))
@@ -184,13 +163,11 @@ static unsigned long i386_get_phys_l2(pt_entry_t pte, unsigned long virt)
 		(pte32 & BIT_MASK(31, 22)) | (virt & BIT_MASK(21, 0));
 }
 
-static unsigned long i386_get_phys_l1(pt_entry_t pte, unsigned long virt)
-{
+static unsigned long i386_get_phys_l1(pt_entry_t pte, unsigned long virt) {
 	return (*(u32 *)pte & BIT_MASK(31, 12)) | (virt & BIT_MASK(11, 0));
 }
 
-static unsigned long i386_get_next_pt(pt_entry_t pte)
-{
+static unsigned long i386_get_next_pt(pt_entry_t pte) {
 	return *(u32 *)pte & BIT_MASK(31, 12);
 }
 
@@ -214,8 +191,7 @@ const struct paging i386_paging[] = {
 
 /* Can be overridden in vendor-specific code if needed */
 pt_entry_t __attribute__((weak)) vcpu_pae_get_pdpte(page_table_t page_table,
-						    unsigned long virt)
-{
+						    unsigned long virt) {
 	return &page_table[(virt >> 30) & 0x3];
 }
 

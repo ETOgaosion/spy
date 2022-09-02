@@ -5,4 +5,6 @@
 #ifndef SPY_ENABLE_H
 #define SPY_ENABLE_H
 
+int enable(int argc, char *argv[]);
+
 #endif //SPY_ENABLE_H

@@ -13,14 +13,12 @@
 
 static int major = 0;
 
-static int spy_open(struct inode *pnode, struct file *spy_file)
-{
+static int spy_open(struct inode *pnode, struct file *spy_file) {
      pr_info("[kern func]: %s  major: %d  minor: %d\n", __FUNCTION__, imajor(pnode), iminor(pnode));
      return 0;
 }
 
-static ssize_t spy_read(struct file *spy_file, char __user *buf, size_t count, loff_t *offptr)
-{
+static ssize_t spy_read(struct file *spy_file, char __user *buf, size_t count, loff_t *offptr) {
     unsigned char ary[100] = "you are reading successfully!";
     unsigned long len = min(count, sizeof(ary));
     int retval;
@@ -35,8 +33,7 @@ cp_err:
      return retval;
 }
 
-static ssize_t spy_write(struct file *spy_file, const char __user *buf, size_t count, loff_t *offptr)
-{
+static ssize_t spy_write(struct file *spy_file, const char __user *buf, size_t count, loff_t *offptr) {
     unsigned char ary[100] = "";
     unsigned long len = min(count, sizeof(ary));
     int retval;
@@ -80,8 +77,7 @@ long spy_ioctl (struct file *spy_file, unsigned int ioctl, unsigned long arg) {
     return err;
 }
 
-static int spy_release(struct inode *pnode, struct file *spy_file)
-{
+static int spy_release(struct inode *pnode, struct file *spy_file) {
      pr_info("[kern func]: %s  major: %d  minor: %d\n", __FUNCTION__, imajor(pnode), iminor(pnode));
      return 0;
 }
@@ -96,8 +92,7 @@ static struct file_operations fops = {
 
 static struct class *spy_class;
 
-int spy_device_init(void)
-{
+int spy_device_init(void) {
     struct device *spy_device;
     int i;
     int retval;
@@ -142,8 +137,7 @@ chrdev_err:
     return retval; 
 }
 
-void spy_device_exit(void)
-{
+void spy_device_exit(void) {
       int i;
       pr_info("[spy_device] > in module exit function\n");
       unregister_chrdev(major, "spy_chrdev");

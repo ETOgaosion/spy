@@ -24,8 +24,7 @@ static u8 __attribute__((aligned(PAGE_SIZE))) parking_code[PAGE_SIZE] = {
 	0xfc  /*    jmp 1b */
 };
 
-int vcpu_early_init(void)
-{
+int vcpu_early_init(void) {
 	int err;
 
 	err = vcpu_vendor_early_init();
@@ -44,8 +43,7 @@ const u8 *vcpu_get_inst_bytes(const struct guest_paging_structures *pg_structs,
 	__attribute__((weak, alias("vcpu_map_inst")));
 
 const u8 *vcpu_map_inst(const struct guest_paging_structures *pg_structs,
-			unsigned long pc, unsigned int *size)
-{
+			unsigned long pc, unsigned int *size) {
 	unsigned short bytes_avail;
 	u8 *page = NULL;
 
@@ -68,8 +66,7 @@ out_err:
 }
 
 static void pio_allow_access(u8 *bm, const struct spy_pio *pio,
-			     bool access)
-{
+			     bool access) {
 	void (*access_method)(unsigned int, volatile unsigned long*) =
 		access ? clear_bit : set_bit;
 	unsigned int length, start_bit = pio->base;
@@ -78,8 +75,7 @@ static void pio_allow_access(u8 *bm, const struct spy_pio *pio,
 		access_method(start_bit, (unsigned long*)bm);
 }
 
-int vcpu_target_init(struct target *target)
-{
+int vcpu_target_init(struct target *target) {
 	const unsigned int io_bitmap_pages = vcpu_vendor_get_io_bitmap_pages();
 	const struct spy_pio *pio;
 	unsigned int n, pm_timer_addr;
@@ -132,8 +128,7 @@ int vcpu_target_init(struct target *target)
 	return 0;
 }
 
-void vcpu_target_exit(struct target *target)
-{
+void vcpu_target_exit(struct target *target) {
 	const struct spy_pio *target_wl, *root_wl;
 	unsigned int interval_start, interval_end, m, n;
 	struct spy_pio refund;
@@ -160,8 +155,7 @@ void vcpu_target_exit(struct target *target)
 	vcpu_vendor_target_exit(target);
 }
 
-void vcpu_handle_hypercall(void)
-{
+void vcpu_handle_hypercall(void) {
 	union registers *guest_regs = &this_cpu_data()->guest_regs;
 	u16 cs_attr = vcpu_vendor_get_cs_attr();
 	bool long_mode = (vcpu_vendor_get_efer() & EFER_LMA) &&
@@ -206,8 +200,7 @@ void vcpu_handle_hypercall(void)
 	}
 }
 
-bool vcpu_handle_io_access(void)
-{
+bool vcpu_handle_io_access(void) {
 	struct vcpu_io_intercept io;
 	int result = 0;
 
@@ -235,8 +228,7 @@ invalid_access:
 	return false;
 }
 
-bool vcpu_handle_mmio_access(void)
-{
+bool vcpu_handle_mmio_access(void) {
 	union registers *guest_regs = &this_cpu_data()->guest_regs;
 	enum mmio_result result = MMIO_UNHANDLED;
 	struct guest_paging_structures pg_structs;
@@ -280,8 +272,7 @@ invalid_access:
 	return false;
 }
 
-bool vcpu_handle_msr_read(void)
-{
+bool vcpu_handle_msr_read(void) {
 	struct per_cpu *cpu_data = this_cpu_data();
 
 	switch (cpu_data->guest_regs.rcx) {
@@ -307,8 +298,7 @@ bool vcpu_handle_msr_read(void)
 	return true;
 }
 
-bool vcpu_handle_msr_write(void)
-{
+bool vcpu_handle_msr_write(void) {
 	struct per_cpu *cpu_data = this_cpu_data();
 	unsigned int bit_pos, pa;
 	unsigned long val;
@@ -357,9 +347,8 @@ bool vcpu_handle_msr_write(void)
 	return true;
 }
 
-void vcpu_handle_cpuid(void)
-{
-	static const char signature[12] = "Jailhouse";
+void vcpu_handle_cpuid(void) {
+	static const char signature[12] = "Spy";
 	union registers *guest_regs = &this_cpu_data()->guest_regs;
 	u32 function = guest_regs->rax;
 
@@ -406,8 +395,7 @@ void vcpu_handle_cpuid(void)
 	vcpu_skip_emulated_instruction(X86_INST_LEN_CPUID);
 }
 
-void vcpu_reset(unsigned int sipi_vector)
-{
+void vcpu_reset(unsigned int sipi_vector) {
 	struct per_cpu *cpu_data = this_cpu_data();
 
 	vcpu_vendor_reset(sipi_vector);

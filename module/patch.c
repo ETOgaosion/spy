@@ -31,15 +31,13 @@ void handler_post(struct kprobe *p, struct pt_regs *regs,
     pr_info("[spy_patch] > patch successfully\n");
 }
 
-int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
-{
+int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr) {
     pr_info("[spy_patch] > patch failed\n");
     pr_info("[spy_patch] > fault_handler: p->addr = 0x%p, trap #%dn", p->addr, trapnr);
     return -1;
 }
 
-static int __init kprobe_init(void)
-{
+static int __init kprobe_init(void) {
     int ret;
     kp.pre_handler = handler_pre;
     kp.post_handler = handler_post;
@@ -54,8 +52,7 @@ static int __init kprobe_init(void)
     return spy_device_init();
 }
 
-static void __exit kprobe_exit(void)
-{
+static void __exit kprobe_exit(void) {
     unregister_kprobe(&kp);
     pr_info("[spy_patch] > kprobe at %p unregistered\n", kp.addr);
     spy_device_exit();

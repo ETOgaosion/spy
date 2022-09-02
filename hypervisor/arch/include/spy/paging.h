@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013, 2014
  *
@@ -225,8 +225,7 @@ void page_free(struct page_pool *pool, void *first_page, unsigned int num);
  * @see paging_virt2phys
  * @see arch_paging_gphys2phys
  */
-static inline unsigned long paging_hvirt2phys(const volatile void *hvirt)
-{
+static inline unsigned long paging_hvirt2phys(const volatile void *hvirt) {
 	return (unsigned long)hvirt - page_offset;
 }
 
@@ -240,8 +239,7 @@ static inline unsigned long paging_hvirt2phys(const volatile void *hvirt)
  * @see paging_virt2phys
  * @see arch_paging_gphys2phys
  */
-static inline void *paging_phys2hvirt(unsigned long phys)
-{
+static inline void *paging_phys2hvirt(unsigned long phys) {
 	return (void *)phys + page_offset;
 }
 

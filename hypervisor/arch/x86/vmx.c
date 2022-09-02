@@ -71,8 +71,7 @@ static struct paging ept_paging[EPT_PAGE_DIR_LEVELS];
 static u32 secondary_exec_addon;
 static unsigned long cr_maybe1[2], cr_required1[2];
 
-static bool vmxon(void)
-{
+static bool vmxon(void) {
 	unsigned long vmxon_addr;
 	u8 ok;
 
@@ -86,8 +85,7 @@ static bool vmxon(void)
 	return ok;
 }
 
-static bool vmcs_clear(void)
-{
+static bool vmcs_clear(void) {
 	unsigned long vmcs_addr;
 	u8 ok;
 
@@ -101,8 +99,7 @@ static bool vmcs_clear(void)
 	return ok;
 }
 
-static bool vmcs_load(void)
-{
+static bool vmcs_load(void) {
 	unsigned long vmcs_addr;
 	u8 ok;
 
@@ -116,26 +113,22 @@ static bool vmcs_load(void)
 	return ok;
 }
 
-static inline unsigned long vmcs_read64(unsigned long field)
-{
+static inline unsigned long vmcs_read64(unsigned long field) {
 	unsigned long value;
 
 	asm volatile("vmread %1,%0" : "=r" (value) : "r" (field) : "cc");
 	return value;
 }
 
-static inline u16 vmcs_read16(unsigned long field)
-{
+static inline u16 vmcs_read16(unsigned long field) {
 	return vmcs_read64(field);
 }
 
-static inline u32 vmcs_read32(unsigned long field)
-{
+static inline u32 vmcs_read32(unsigned long field) {
 	return vmcs_read64(field);
 }
 
-static bool vmcs_write64(unsigned long field, unsigned long val)
-{
+static bool vmcs_write64(unsigned long field, unsigned long val) {
 	u8 ok;
 
 	asm volatile(
@@ -151,20 +144,17 @@ static bool vmcs_write64(unsigned long field, unsigned long val)
 	return ok;
 }
 
-static bool vmcs_write16(unsigned long field, u16 value)
-{
+static bool vmcs_write16(unsigned long field, u16 value) {
 	return vmcs_write64(field, value);
 }
 
-static bool vmcs_write32(unsigned long field, u32 value)
-{
+static bool vmcs_write32(unsigned long field, u32 value) {
 	return vmcs_write64(field, value);
 }
 
 static bool vmx_define_cr_restrictions(unsigned int cr_idx,
 				       unsigned long maybe1,
-				       unsigned long required1)
-{
+				       unsigned long required1) {
 	if (!cr_maybe1[cr_idx]) {
 		cr_maybe1[cr_idx] = maybe1;
 		cr_required1[cr_idx] = required1;
@@ -175,8 +165,7 @@ static bool vmx_define_cr_restrictions(unsigned int cr_idx,
 		cr_required1[cr_idx] == required1;
 }
 
-static int vmx_check_features(void)
-{
+static int vmx_check_features(void) {
 	unsigned long vmx_proc_ctrl, vmx_proc_ctrl2, ept_cap;
 	unsigned long vmx_pin_ctrl, vmx_basic, maybe1, required1;
 	unsigned long vmx_entry_ctrl, vmx_exit_ctrl;
@@ -280,14 +269,12 @@ static int vmx_check_features(void)
 	return 0;
 }
 
-static void ept_set_next_pt(pt_entry_t pte, unsigned long next_pt)
-{
+static void ept_set_next_pt(pt_entry_t pte, unsigned long next_pt) {
 	*pte = (next_pt & BIT_MASK(51, 12)) | EPT_FLAG_READ | EPT_FLAG_WRITE |
 		EPT_FLAG_EXECUTE;
 }
 
-int vcpu_vendor_early_init(void)
-{
+int vcpu_vendor_early_init(void) {
 	unsigned int n;
 	int err;
 
@@ -318,14 +305,12 @@ int vcpu_vendor_early_init(void)
 	return vcpu_target_init(&root_target);
 }
 
-unsigned long arch_paging_gphys2phys(unsigned long gphys, unsigned long flags)
-{
+unsigned long arch_paging_gphys2phys(unsigned long gphys, unsigned long flags) {
 	return paging_virt2phys(&this_target()->arch.vmx.ept_structs, gphys,
 				flags);
 }
 
-int vcpu_vendor_target_init(struct target *target)
-{
+int vcpu_vendor_target_init(struct target *target) {
 	/* build root EPT of target */
 	target->arch.vmx.ept_structs.root_paging = ept_paging;
 	target->arch.vmx.ept_structs.root_table =
@@ -341,8 +326,7 @@ int vcpu_vendor_target_init(struct target *target)
 }
 
 int vcpu_map_memory_region(struct target *target,
-			   const struct spy_memory *mem)
-{
+			   const struct spy_memory *mem) {
 	u64 phys_start = mem->phys_start;
 	unsigned long access_flags = EPT_FLAG_WB_TYPE;
 	unsigned long paging_flags = PAGING_NON_COHERENT | PAGING_HUGE;
@@ -363,20 +347,17 @@ int vcpu_map_memory_region(struct target *target,
 }
 
 int vcpu_unmap_memory_region(struct target *target,
-			     const struct spy_memory *mem)
-{
+			     const struct spy_memory *mem) {
 	return paging_destroy(&target->arch.vmx.ept_structs, mem->virt_start,
 			      mem->size, PAGING_NON_COHERENT);
 }
 
-void vcpu_vendor_target_exit(struct target *target)
-{
+void vcpu_vendor_target_exit(struct target *target) {
 	paging_destroy(&target->arch.vmx.ept_structs, XAPIC_BASE, PAGE_SIZE,
 		       PAGING_NON_COHERENT);
 }
 
-void vcpu_tlb_flush(void)
-{
+void vcpu_tlb_flush(void) {
 	unsigned long ept_cap = read_msr(MSR_IA32_VMX_EPT_VPID_CAP);
 	struct {
 		u64 eptp;
@@ -407,8 +388,7 @@ void vcpu_tlb_flush(void)
 	}
 }
 
-static bool vmx_set_guest_cr(unsigned int cr_idx, unsigned long val)
-{
+static bool vmx_set_guest_cr(unsigned int cr_idx, unsigned long val) {
 	bool ok = true;
 
 	if (cr_idx)
@@ -423,16 +403,14 @@ static bool vmx_set_guest_cr(unsigned int cr_idx, unsigned long val)
 	return ok;
 }
 
-unsigned long vcpu_vendor_get_guest_cr4(void)
-{
+unsigned long vcpu_vendor_get_guest_cr4(void) {
 	unsigned long host_mask = cr_required1[CR4_IDX] | ~cr_maybe1[CR4_IDX];
 
 	return (vmcs_read64(CR4_READ_SHADOW) & host_mask) |
 		(vmcs_read64(GUEST_CR4) & ~host_mask);
 }
 
-static bool vmx_set_target_config(void)
-{
+static bool vmx_set_target_config(void) {
 	struct target *target = this_target();
 	u8 *io_bitmap;
 	bool ok = true;
@@ -450,8 +428,7 @@ static bool vmx_set_target_config(void)
 }
 
 static bool vmx_set_guest_segment(const struct segment *seg,
-				  unsigned long selector_field)
-{
+				  unsigned long selector_field) {
 	bool ok = true;
 
 	ok &= vmcs_write16(selector_field, seg->selector);
@@ -462,8 +439,7 @@ static bool vmx_set_guest_segment(const struct segment *seg,
 	return ok;
 }
 
-static bool vmcs_setup(void)
-{
+static bool vmcs_setup(void) {
 	struct per_cpu *cpu_data = this_cpu_data();
 	struct desc_table_reg dtr;
 	unsigned long val;
@@ -598,8 +574,7 @@ static bool vmcs_setup(void)
 	return ok;
 }
 
-int vcpu_init(struct per_cpu *cpu_data)
-{
+int vcpu_init(struct per_cpu *cpu_data) {
 	unsigned long feature_ctrl, mask;
 	u32 revision_id;
 	int err;
@@ -677,8 +652,7 @@ int vcpu_init(struct per_cpu *cpu_data)
 	return 0;
 }
 
-void vcpu_exit(struct per_cpu *cpu_data)
-{
+void vcpu_exit(struct per_cpu *cpu_data) {
 	if (cpu_data->vmx_state == VMXOFF)
 		return;
 
@@ -692,8 +666,7 @@ void vcpu_exit(struct per_cpu *cpu_data)
 	cpu_data->linux_cr4 &= ~X86_CR4_VMXE;
 }
 
-void __attribute__((noreturn)) vcpu_activate_vmm(void)
-{
+void __attribute__((noreturn)) vcpu_activate_vmm(void) {
 	/* We enter Linux at the point arch_entry would return to as well.
 	 * rax is cleared to signal success to the caller. */
 	asm volatile(
@@ -714,8 +687,7 @@ void __attribute__((noreturn)) vcpu_activate_vmm(void)
 	panic_stop();
 }
 
-void __attribute__((noreturn)) vcpu_deactivate_vmm(void)
-{
+void __attribute__((noreturn)) vcpu_deactivate_vmm(void) {
 	/* use common per-cpu area - mandatory after arch_cpu_restore */
 	struct per_cpu *cpu_data = per_cpu(this_cpu_id());
 	unsigned long *stack = (unsigned long *)vmcs_read64(GUEST_RSP);
@@ -776,8 +748,7 @@ void __attribute__((noreturn)) vcpu_deactivate_vmm(void)
 	__builtin_unreachable();
 }
 
-void vcpu_vendor_reset(unsigned int sipi_vector)
-{
+void vcpu_vendor_reset(unsigned int sipi_vector) {
 	unsigned long reset_addr, val;
 	bool ok = true;
 
@@ -875,8 +846,7 @@ void vcpu_vendor_reset(unsigned int sipi_vector)
 	}
 }
 
-static void vmx_preemption_timer_set_enable(bool enable)
-{
+static void vmx_preemption_timer_set_enable(bool enable) {
 	u32 pin_based_ctrl = vmcs_read32(PIN_BASED_VM_EXEC_CONTROL);
 
 	if (enable)
@@ -886,14 +856,12 @@ static void vmx_preemption_timer_set_enable(bool enable)
 	vmcs_write32(PIN_BASED_VM_EXEC_CONTROL, pin_based_ctrl);
 }
 
-void vcpu_nmi_handler(void)
-{
+void vcpu_nmi_handler(void) {
 	if (this_cpu_data()->vmx_state == VMCS_READY)
 		vmx_preemption_timer_set_enable(true);
 }
 
-void vcpu_park(void)
-{
+void vcpu_park(void) {
 #ifdef CONFIG_CRASH_TARGET_ON_PANIC
 	if (this_cpu_public()->failed) {
 		vmcs_write64(GUEST_RIP, 0);
@@ -906,19 +874,16 @@ void vcpu_park(void)
 				  EPT_TYPE_WRITEBACK | EPT_PAGE_WALK_LEN);
 }
 
-void vcpu_skip_emulated_instruction(unsigned int inst_len)
-{
+void vcpu_skip_emulated_instruction(unsigned int inst_len) {
 	vmcs_write64(GUEST_RIP, vmcs_read64(GUEST_RIP) + inst_len);
 }
 
-static void vmx_check_events(void)
-{
+static void vmx_check_events(void) {
 	vmx_preemption_timer_set_enable(false);
 	x86_check_events();
 }
 
-static void vmx_handle_exception_nmi(void)
-{
+static void vmx_handle_exception_nmi(void) {
 	struct public_per_cpu *cpu_public = &this_cpu_data()->public;
 	u32 intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
 
@@ -946,8 +911,7 @@ static void vmx_handle_exception_nmi(void)
 	vmx_check_events();
 }
 
-static void update_efer(void)
-{
+static void update_efer(void) {
 	unsigned long efer = vmcs_read64(GUEST_IA32_EFER);
 
 	if ((efer & (EFER_LME | EFER_LMA)) != EFER_LME)
@@ -959,8 +923,7 @@ static void update_efer(void)
 		     vmcs_read32(VM_ENTRY_CONTROLS) | VM_ENTRY_IA32E_MODE);
 }
 
-static bool vmx_handle_cr(void)
-{
+static bool vmx_handle_cr(void) {
 	u64 exit_qualification = vmcs_read64(EXIT_QUALIFICATION);
 	unsigned long cr, reg, val;
 
@@ -991,8 +954,7 @@ static bool vmx_handle_cr(void)
 	return false;
 }
 
-void vcpu_get_guest_paging_structs(struct guest_paging_structures *pg_structs)
-{
+void vcpu_get_guest_paging_structs(struct guest_paging_structures *pg_structs) {
 	struct per_cpu *cpu_data = this_cpu_data();
 	unsigned int n;
 
@@ -1025,18 +987,15 @@ void vcpu_get_guest_paging_structs(struct guest_paging_structures *pg_structs)
 	}
 }
 
-pt_entry_t vcpu_pae_get_pdpte(page_table_t page_table, unsigned long virt)
-{
+pt_entry_t vcpu_pae_get_pdpte(page_table_t page_table, unsigned long virt) {
 	return &this_cpu_data()->pdpte[(virt >> 30) & 0x3];
 }
 
-void vcpu_vendor_set_guest_pat(unsigned long val)
-{
+void vcpu_vendor_set_guest_pat(unsigned long val) {
 	vmcs_write64(GUEST_IA32_PAT, val);
 }
 
-static bool vmx_handle_apic_access(void)
-{
+static bool vmx_handle_apic_access(void) {
 	struct guest_paging_structures pg_structs;
 	unsigned int inst_len, offset;
 	u64 qualification;
@@ -1066,8 +1025,7 @@ static bool vmx_handle_apic_access(void)
 	return false;
 }
 
-static bool vmx_handle_xsetbv(void)
-{
+static bool vmx_handle_xsetbv(void) {
 	union registers *guest_regs = &this_cpu_data()->guest_regs;
 
 	if (vcpu_vendor_get_guest_cr4() & X86_CR4_OSXSAVE &&
@@ -1087,8 +1045,7 @@ static bool vmx_handle_xsetbv(void)
 	return false;
 }
 
-static void dump_vm_exit_details(u32 reason)
-{
+static void dump_vm_exit_details(u32 reason) {
 	panic_printk("qualification %lx\n", vmcs_read64(EXIT_QUALIFICATION));
 	panic_printk("vectoring info: %x interrupt info: %x\n",
 		     vmcs_read32(IDT_VECTORING_INFO_FIELD),
@@ -1100,8 +1057,7 @@ static void dump_vm_exit_details(u32 reason)
 			     vmcs_read64(GUEST_LINEAR_ADDRESS));
 }
 
-static void dump_guest_regs(union registers *guest_regs)
-{
+static void dump_guest_regs(union registers *guest_regs) {
 	panic_printk("RIP: 0x%016lx RSP: 0x%016lx FLAGS: %lx\n",
 		     vmcs_read64(GUEST_RIP), vmcs_read64(GUEST_RSP),
 		     vmcs_read64(GUEST_RFLAGS));
@@ -1120,8 +1076,7 @@ static void dump_guest_regs(union registers *guest_regs)
 	panic_printk("EFER: 0x%016lx\n", vmcs_read64(GUEST_IA32_EFER));
 }
 
-void vcpu_vendor_get_io_intercept(struct vcpu_io_intercept *io)
-{
+void vcpu_vendor_get_io_intercept(struct vcpu_io_intercept *io) {
 	u64 exitq = vmcs_read64(EXIT_QUALIFICATION);
 
 	/* parse exit qualification for I/O instructions (see SDM, 27.2.1 ) */
@@ -1132,8 +1087,7 @@ void vcpu_vendor_get_io_intercept(struct vcpu_io_intercept *io)
 	io->rep_or_str = !!(exitq & 0x30);
 }
 
-void vcpu_vendor_get_mmio_intercept(struct vcpu_mmio_intercept *mmio)
-{
+void vcpu_vendor_get_mmio_intercept(struct vcpu_mmio_intercept *mmio) {
 	u64 exitq = vmcs_read64(EXIT_QUALIFICATION);
 
 	mmio->phys_addr = vmcs_read64(GUEST_PHYSICAL_ADDRESS);
@@ -1142,8 +1096,7 @@ void vcpu_vendor_get_mmio_intercept(struct vcpu_mmio_intercept *mmio)
 	mmio->is_write = !!(exitq & 0x2);
 }
 
-void vcpu_handle_exit(struct per_cpu *cpu_data)
-{
+void vcpu_handle_exit(struct per_cpu *cpu_data) {
 	u32 reason = vmcs_read32(VM_EXIT_REASON);
 	u32 *stats = cpu_data->public.stats;
 
@@ -1214,21 +1167,18 @@ void vcpu_handle_exit(struct per_cpu *cpu_data)
 	panic_park();
 }
 
-void vmx_entry_failure(void)
-{
+void vmx_entry_failure(void) {
 	panic_printk("FATAL: vmresume failed, error %d\n",
 		     vmcs_read32(VM_INSTRUCTION_ERROR));
 	panic_stop();
 }
 
-unsigned int vcpu_vendor_get_io_bitmap_pages(void)
-{
+unsigned int vcpu_vendor_get_io_bitmap_pages(void) {
 	return PIO_BITMAP_PAGES;
 }
 
 #define VCPU_VENDOR_GET_REGISTER(__reg__, __field__)	\
-u64 vcpu_vendor_get_##__reg__(void)			\
-{							\
+u64 vcpu_vendor_get_##__reg__(void)			\ {							\
 	return vmcs_read64(__field__);			\
 }
 
@@ -1236,17 +1186,14 @@ VCPU_VENDOR_GET_REGISTER(efer, GUEST_IA32_EFER);
 VCPU_VENDOR_GET_REGISTER(rflags, GUEST_RFLAGS);
 VCPU_VENDOR_GET_REGISTER(rip, GUEST_RIP);
 
-u16 vcpu_vendor_get_cs_attr(void)
-{
+u16 vcpu_vendor_get_cs_attr(void) {
 	return vmcs_read32(GUEST_CS_AR_BYTES);
 }
 
-void enable_irq(void)
-{
+void enable_irq(void) {
 	asm volatile("sti" : : : "memory");
 }
 
-void disable_irq(void)
-{
+void disable_irq(void) {
 	asm volatile("cli" : : : "memory");
 }

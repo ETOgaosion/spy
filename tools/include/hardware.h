@@ -5,4 +5,6 @@
 #ifndef SPY_HARDWARE_H
 #define SPY_HARDWARE_H
 
+void hardware_check(void);
+
 #endif //SPY_HARDWARE_H

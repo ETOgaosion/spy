@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013
  *
@@ -46,7 +46,7 @@ arch_entry:
 	/* Save the Linux stack pointer inside the per_cpu region */
 	mov %rsp,PERCPU_LINUX_SP(%rsi)
 
-	/* Set the Jailhouse stack pointer */
+	/* Set the Spy stack pointer */
 	lea PERCPU_STACK_END-8(%rsi),%rsp
 
 	push %rsi

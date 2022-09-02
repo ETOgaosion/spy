@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013
  * Copyright (c) Valentine Sinitsyn, 2014
@@ -218,13 +218,11 @@ struct segment {
 
 static unsigned long __force_order;
 
-static inline void cpu_relax(void)
-{
+static inline void cpu_relax(void) {
 	asm volatile("rep; nop" : : : "memory");
 }
 
-static inline void memory_barrier(void)
-{
+static inline void memory_barrier(void) {
     /*
      * 对MFENCE指令之前发出的所有从内存加载和存储到内存的指令进行序列化操作
      * 保证之前的内存指令committed
@@ -232,14 +230,12 @@ static inline void memory_barrier(void)
 	asm volatile("mfence" : : : "memory");
 }
 
-static inline void memory_load_barrier(void)
-{
+static inline void memory_load_barrier(void) {
 	asm volatile("lfence" : : : "memory");
 }
 
 static inline void cpuid(unsigned int *eax, unsigned int *ebx,
-			 unsigned int *ecx, unsigned int *edx)
-{
+			 unsigned int *ecx, unsigned int *edx) {
 	/* ecx is often an input as well as an output. */
 	asm volatile("cpuid"
 	    : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
@@ -248,8 +244,7 @@ static inline void cpuid(unsigned int *eax, unsigned int *ebx,
 }
 
 #define CPUID_REG(reg)							\
-static inline unsigned int cpuid_##reg(unsigned int op, unsigned int sub) \
-{									\
+static inline unsigned int cpuid_##reg(unsigned int op, unsigned int sub) \ {									\
 	unsigned int eax, ebx, ecx, edx;				\
 									\
 	eax = op;							\
@@ -263,97 +258,82 @@ CPUID_REG(ebx)
 CPUID_REG(ecx)
 CPUID_REG(edx)
 
-static inline unsigned long read_cr0(void)
-{
+static inline unsigned long read_cr0(void) {
 	unsigned long cr0;
 
 	asm volatile("mov %%cr0,%0" : "=r" (cr0), "=m" (__force_order));
 	return cr0;
 }
 
-static inline void write_cr0(unsigned long val)
-{
+static inline void write_cr0(unsigned long val) {
 	asm volatile("mov %0,%%cr0" : : "r" (val), "m" (__force_order));
 }
 
-static inline unsigned long read_cr2(void)
-{
+static inline unsigned long read_cr2(void) {
 	unsigned long cr2;
 
 	asm volatile("mov %%cr2,%0" : "=r" (cr2), "=m" (__force_order));
 	return cr2;
 }
 
-static inline unsigned long read_cr3(void)
-{
+static inline unsigned long read_cr3(void) {
 	unsigned long cr3;
 
 	asm volatile("mov %%cr3,%0" : "=r" (cr3), "=m" (__force_order));
 	return cr3;
 }
 
-static inline void write_cr3(unsigned long val)
-{
+static inline void write_cr3(unsigned long val) {
 	asm volatile("mov %0,%%cr3" : : "r" (val), "m" (__force_order));
 }
 
-static inline unsigned long read_cr4(void)
-{
+static inline unsigned long read_cr4(void) {
 	unsigned long cr4;
 
 	asm volatile("mov %%cr4,%0" : "=r" (cr4), "=m" (__force_order));
 	return cr4;
 }
 
-static inline void write_cr4(unsigned long val)
-{
+static inline void write_cr4(unsigned long val) {
 	asm volatile("mov %0,%%cr4" : : "r" (val), "m" (__force_order));
 }
 
-static inline unsigned long read_msr(unsigned int msr)
-{
+static inline unsigned long read_msr(unsigned int msr) {
 	u32 low, high;
 
 	asm volatile("rdmsr" : "=a" (low), "=d" (high) : "c" (msr));
 	return low | ((unsigned long)high << 32);
 }
 
-static inline void write_msr(unsigned int msr, unsigned long val)
-{
+static inline void write_msr(unsigned int msr, unsigned long val) {
 	asm volatile("wrmsr"
 		: /* no output */
 		: "c" (msr), "a" (val), "d" (val >> 32)
 		: "memory");
 }
 
-static inline void set_rdmsr_value(union registers *regs, unsigned long val)
-{
+static inline void set_rdmsr_value(union registers *regs, unsigned long val) {
 	regs->rax = (u32)val;
 	regs->rdx = val >> 32;
 }
 
-static inline unsigned long get_wrmsr_value(union registers *regs)
-{
+static inline unsigned long get_wrmsr_value(union registers *regs) {
 	return (u32)regs->rax | (regs->rdx << 32);
 }
 
-static inline void read_gdtr(struct desc_table_reg *val)
-{
+static inline void read_gdtr(struct desc_table_reg *val) {
 	asm volatile("sgdtq %0" : "=m" (*val));
 }
 
-static inline void write_gdtr(struct desc_table_reg *val)
-{
+static inline void write_gdtr(struct desc_table_reg *val) {
 	asm volatile("lgdtq %0" : : "m" (*val));
 }
 
-static inline void read_idtr(struct desc_table_reg *val)
-{
+static inline void read_idtr(struct desc_table_reg *val) {
 	asm volatile("sidtq %0" : "=m" (*val));
 }
 
-static inline void write_idtr(struct desc_table_reg *val)
-{
+static inline void write_idtr(struct desc_table_reg *val) {
 	asm volatile("lidtq %0" : : "m" (*val));
 }
 

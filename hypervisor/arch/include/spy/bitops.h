@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2020
  *
@@ -24,14 +24,12 @@
 	((0xffffffffffffffffULL >> (64 - ((last) + 1 - (first)))) << (first))
 
 static inline __attribute__((always_inline)) void
-clear_bit(unsigned int nr, volatile unsigned long *addr)
-{
+clear_bit(unsigned int nr, volatile unsigned long *addr) {
 	addr[nr / BITS_PER_LONG] &= ~(1UL << (nr % BITS_PER_LONG));
 }
 
 static inline __attribute__((always_inline)) void
-set_bit(unsigned int nr, volatile unsigned long *addr)
-{
+set_bit(unsigned int nr, volatile unsigned long *addr) {
 	addr[nr / BITS_PER_LONG] |= 1UL << (nr % BITS_PER_LONG);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013, 2014
  *
@@ -23,8 +23,7 @@ typedef struct {
 	u16 owner, next;
 } spinlock_t;
 
-static inline void spin_lock(spinlock_t *lock)
-{
+static inline void spin_lock(spinlock_t *lock) {
 	register spinlock_t inc = { .next = 1 };
 
 	asm volatile("lock xaddl %0, %1"
@@ -38,8 +37,7 @@ static inline void spin_lock(spinlock_t *lock)
 	asm volatile("" : : : "memory");
 }
 
-static inline void spin_unlock(spinlock_t *lock)
-{
+static inline void spin_unlock(spinlock_t *lock) {
 	asm volatile("addw %1, %0"
 		: "+m" (lock->owner)
 		: "ri" (1)

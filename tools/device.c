@@ -2,9 +2,15 @@
 // Created by 蓝色空间 on 2022/9/1.
 //
 
+#include "device.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-int open_dev()
-{
+int open_dev() {
     int fd;
 
     fd = open(SPY_DEVICE, O_RDWR);
@@ -15,8 +21,7 @@ int open_dev()
     return fd;
 }
 
-void *read_string(const char *string, size_t *size)
-{
+void *read_string(const char *string, size_t *size) {
     void *buffer;
 
     *size = strlen(string) + 1;
@@ -30,8 +35,7 @@ void *read_string(const char *string, size_t *size)
     return buffer;
 }
 
-void *read_file(const char *name, size_t *size)
-{
+void *read_file(const char *name, size_t *size) {
     struct stat stat;
     ssize_t result;
     void *buffer;

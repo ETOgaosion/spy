@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013, 2014
  *
@@ -54,15 +54,13 @@
 
 typedef unsigned long *pt_entry_t;
 
-static inline void arch_paging_flush_page_tlbs(unsigned long page_addr)
-{
+static inline void arch_paging_flush_page_tlbs(unsigned long page_addr) {
 	asm volatile("invlpg (%0)" : : "r" (page_addr));
 }
 
 extern unsigned long cache_line_size;
 
-static inline void arch_paging_flush_cpu_caches(void *addr, long size)
-{
+static inline void arch_paging_flush_cpu_caches(void *addr, long size) {
 	for (; size > 0; size -= cache_line_size, addr += cache_line_size)
 		asm volatile("clflush %0" : "+m" (*(char *)addr));
 }

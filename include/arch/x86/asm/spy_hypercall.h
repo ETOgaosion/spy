@@ -37,7 +37,7 @@
 /**
  * @defgroup Hypercalls Hypercall Subsystem
  *
- * The hypercall subsystem provides an interface for targets to invoke Jailhouse
+ * The hypercall subsystem provides an interface for targets to invoke Spy
  * services and interact via the communication region.
  *
  * @{
@@ -80,8 +80,7 @@ struct spy_comm_region {
  *
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
-static inline __u32 spy_call(__u32 num)
-{
+static inline __u32 spy_call(__u32 num) {
 	__u32 result;
 
 	asm volatile(SPY_CALL_CODE
@@ -98,8 +97,7 @@ static inline __u32 spy_call(__u32 num)
  *
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
-static inline __u32 spy_call_arg1(__u32 num, unsigned long arg1)
-{
+static inline __u32 spy_call_arg1(__u32 num, unsigned long arg1) {
 	__u32 result;
 
 	asm volatile(SPY_CALL_CODE
@@ -119,8 +117,7 @@ static inline __u32 spy_call_arg1(__u32 num, unsigned long arg1)
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
 static inline __u32 spy_call_arg2(__u32 num, unsigned long arg1,
-					unsigned long arg2)
-{
+					unsigned long arg2) {
 	__u32 result;
 
 	asm volatile(SPY_CALL_CODE
@@ -138,8 +135,7 @@ static inline __u32 spy_call_arg2(__u32 num, unsigned long arg1,
  */
 static inline void
 spy_send_msg_to_target(struct spy_comm_region *comm_region,
-			   __u32 msg)
-{
+			   __u32 msg) {
 	comm_region->reply_from_target = SPY_MSG_NONE;
 	/* ensure reply was cleared before sending new message */
 	asm volatile("mfence" : : : "memory");
@@ -154,8 +150,7 @@ spy_send_msg_to_target(struct spy_comm_region *comm_region,
  */
 static inline void
 spy_send_reply_from_target(struct spy_comm_region *comm_region,
-			       __u32 reply)
-{
+			       __u32 reply) {
 	comm_region->msg_to_target = SPY_MSG_NONE;
 	/* ensure message was cleared before sending reply */
 	asm volatile("mfence" : : : "memory");

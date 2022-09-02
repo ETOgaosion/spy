@@ -190,14 +190,12 @@ static spinlock_t inv_queue_lock;
 static struct vtd_emulation root_target_units[SPY_MAX_IOMMU_UNITS];
 static bool dmar_units_initialized;
 
-static unsigned int vtd_mmio_count_regions(struct target *target)
-{
+static unsigned int vtd_mmio_count_regions(struct target *target) {
 	return target == &root_target ? iommu_count_units() : 0;
 }
 
 static unsigned int inv_queue_write(void *inv_queue, unsigned int index,
-				    struct vtd_entry content)
-{
+				    struct vtd_entry content) {
 	struct vtd_entry *entry = inv_queue;
 
 	entry[index] = content;
@@ -207,8 +205,7 @@ static unsigned int inv_queue_write(void *inv_queue, unsigned int index,
 }
 
 static void vtd_submit_iq_request(void *reg_base, void *inv_queue,
-				  const struct vtd_entry *inv_request)
-{
+				  const struct vtd_entry *inv_request) {
 	struct vtd_entry inv_wait = {
 		.lo_word = VTD_REQ_INV_WAIT | VTD_INV_WAIT_SW |
 			VTD_INV_WAIT_FN | (1UL << VTD_INV_WAIT_SDATA_SHIFT),
@@ -235,8 +232,7 @@ static void vtd_submit_iq_request(void *reg_base, void *inv_queue,
 	spin_unlock(&inv_queue_lock);
 }
 
-static void vtd_flush_domain_caches(unsigned int did)
-{
+static void vtd_flush_domain_caches(unsigned int did) {
 	const struct vtd_entry inv_context = {
 		.lo_word = VTD_REQ_INV_CONTEXT | VTD_INV_CONTEXT_DOMAIN |
 			(did << VTD_INV_CONTEXT_DOMAIN_SHIFT),
@@ -258,8 +254,7 @@ static void vtd_flush_domain_caches(unsigned int did)
 	}
 }
 
-static void vtd_update_gcmd_reg(void *reg_base, u32 mask, unsigned int set)
-{
+static void vtd_update_gcmd_reg(void *reg_base, u32 mask, unsigned int set) {
 	u32 val = mmio_read32(reg_base + VTD_GSTS_REG) & VTD_GSTS_USED_CTRLS;
 
 	if (set)
@@ -274,13 +269,11 @@ static void vtd_update_gcmd_reg(void *reg_base, u32 mask, unsigned int set)
 		cpu_relax();
 }
 
-static void vtd_set_next_pt(pt_entry_t pte, unsigned long next_pt)
-{
+static void vtd_set_next_pt(pt_entry_t pte, unsigned long next_pt) {
 	*pte = (next_pt & BIT_MASK(51, 12)) | VTD_PAGE_READ | VTD_PAGE_WRITE;
 }
 
-static void vtd_init_fault_nmi(void)
-{
+static void vtd_init_fault_nmi(void) {
 	union x86_msi_vector msi = { .native.address = MSI_ADDRESS_VALUE };
 	struct public_per_cpu *target_data;
 	void *reg_base = dmar_reg_base;
@@ -322,15 +315,13 @@ static void vtd_init_fault_nmi(void)
 	apic_send_nmi_ipi(target_data);
 }
 
-static void *vtd_get_fault_rec_reg_addr(void *reg_base)
-{
+static void *vtd_get_fault_rec_reg_addr(void *reg_base) {
 	return reg_base + 16 *
 		mmio_read64_field(reg_base + VTD_CAP_REG, VTD_CAP_FRO_MASK);
 }
 
 static void vtd_print_fault_record_reg_status(unsigned int unit_no,
-					      void *reg_base)
-{
+					      void *reg_base) {
 	unsigned int sid = mmio_read64_field(reg_base + VTD_FRCD_HI_REG,
 					     VTD_FRCD_HI_SID_MASK);
 	unsigned int fr = mmio_read64_field(reg_base + VTD_FRCD_HI_REG,
@@ -346,8 +337,7 @@ static void vtd_print_fault_record_reg_status(unsigned int unit_no,
 	printk(" Fault Reason: 0x%x Fault Info: %lx Type %d\n", fr, fi, type);
 }
 
-void iommu_check_pending_faults(void)
-{
+void iommu_check_pending_faults(void) {
 	unsigned int fr_index;
 	void *reg_base = dmar_reg_base;
 	unsigned int n;
@@ -370,8 +360,7 @@ void iommu_check_pending_faults(void)
 		}
 }
 
-static int vtd_emulate_inv_int(unsigned int unit_no, unsigned int index)
-{
+static int vtd_emulate_inv_int(unsigned int unit_no, unsigned int index) {
 	struct vtd_irte_usage *irte_usage;
 	struct apic_irq_message irq_msg;
 	struct pci_device *device;
@@ -394,8 +383,7 @@ static int vtd_emulate_inv_int(unsigned int unit_no, unsigned int index)
 }
 
 static int vtd_emulate_qi_request(unsigned int unit_no,
-				  struct vtd_entry inv_desc)
-{
+				  struct vtd_entry inv_desc) {
 	unsigned int start, count, n;
 	void *status_addr;
 	int result;
@@ -438,8 +426,7 @@ static int vtd_emulate_qi_request(unsigned int unit_no,
 }
 
 static enum mmio_result vtd_unit_access_handler(void *arg,
-						struct mmio_access *mmio)
-{
+						struct mmio_access *mmio) {
 	struct vtd_emulation *unit = arg;
 	unsigned int unit_no = unit - root_target_units;
 	struct vtd_entry inv_desc;
@@ -496,8 +483,7 @@ invalid_iq_entry:
 	return MMIO_ERROR;
 }
 
-static void vtd_init_unit(void *reg_base, void *inv_queue)
-{
+static void vtd_init_unit(void *reg_base, void *inv_queue) {
 	void *fault_reg_base;
 	unsigned int nfr, n;
 
@@ -542,8 +528,7 @@ static void vtd_init_unit(void *reg_base, void *inv_queue)
 	vtd_update_gcmd_reg(reg_base, VTD_GCMD_IRE, 1);
 }
 
-static void vtd_update_irte(unsigned int index, union vtd_irte content)
-{
+static void vtd_update_irte(unsigned int index, union vtd_irte content) {
 	const struct vtd_entry inv_int = {
 		.lo_word = VTD_REQ_INV_INT | VTD_INV_INT_INDEX |
 			((u64)index << VTD_INV_INT_IIDX_SHIFT),
@@ -579,8 +564,7 @@ static void vtd_update_irte(unsigned int index, union vtd_irte content)
 	}
 }
 
-static int vtd_find_int_remap_region(u16 device_id)
-{
+static int vtd_find_int_remap_region(u16 device_id) {
 	unsigned int n;
 
 	/* VTD_INTERRUPT_LIMIT() is < 2^16, see vtd_init */
@@ -592,8 +576,7 @@ static int vtd_find_int_remap_region(u16 device_id)
 	return -ENOENT;
 }
 
-static int vtd_reserve_int_remap_region(u16 device_id, unsigned int length)
-{
+static int vtd_reserve_int_remap_region(u16 device_id, unsigned int length) {
 	int start = -E2BIG;
 	unsigned int n;
 
@@ -621,8 +604,7 @@ static int vtd_reserve_int_remap_region(u16 device_id, unsigned int length)
 	return trace_error(-E2BIG);
 }
 
-static void vtd_free_int_remap_region(u16 device_id, unsigned int length)
-{
+static void vtd_free_int_remap_region(u16 device_id, unsigned int length) {
 	union vtd_irte free_irte = { .field.p = 0, .field.assigned = 0 };
 	int pos = vtd_find_int_remap_region(device_id);
 
@@ -634,8 +616,7 @@ static void vtd_free_int_remap_region(u16 device_id, unsigned int length)
 	}
 }
 
-int iommu_add_pci_device(struct target *target, struct pci_device *device)
-{
+int iommu_add_pci_device(struct target *target, struct pci_device *device) {
 	unsigned int max_vectors = MAX(device->info->num_msi_vectors,
 				       device->info->num_msix_vectors);
 	u16 bdf = device->info->bdf;
@@ -674,8 +655,7 @@ error_nomem:
 	return -ENOMEM;
 }
 
-void iommu_remove_pci_device(struct pci_device *device)
-{
+void iommu_remove_pci_device(struct pci_device *device) {
 	u16 bdf = device->info->bdf;
 	u64 *root_entry_lo = &root_entry_table[PCI_BUS(bdf)].lo_word;
 	struct vtd_entry *context_entry_table;
@@ -702,8 +682,7 @@ void iommu_remove_pci_device(struct pci_device *device)
 
 static void vtd_target_exit(struct target *target);
 
-static int vtd_target_init(struct target *target)
-{
+static int vtd_target_init(struct target *target) {
 	const struct spy_irqchip *irqchip =
 		spy_target_irqchips(target->config);
 	struct phys_ioapic *ioapic;
@@ -734,8 +713,7 @@ static int vtd_target_init(struct target *target)
 }
 
 int iommu_map_memory_region(struct target *target,
-			    const struct spy_memory *mem)
-{
+			    const struct spy_memory *mem) {
 	unsigned long access_flags = 0;
 	unsigned long paging_flags = PAGING_COHERENT | PAGING_HUGE;
 
@@ -758,8 +736,7 @@ int iommu_map_memory_region(struct target *target,
 }
 
 int iommu_unmap_memory_region(struct target *target,
-			      const struct spy_memory *mem)
-{
+			      const struct spy_memory *mem) {
 	if (!(mem->flags & SPY_MEM_DMA))
 		return 0;
 
@@ -769,8 +746,7 @@ int iommu_unmap_memory_region(struct target *target,
 
 struct apic_irq_message
 iommu_get_remapped_root_int(unsigned int iommu, u16 device_id,
-			    unsigned int vector, unsigned int remap_index)
-{
+			    unsigned int vector, unsigned int remap_index) {
 	struct vtd_emulation *unit = &root_target_units[iommu];
 	struct apic_irq_message irq_msg = { .valid = 0 };
 	union vtd_irte root_irte;
@@ -811,8 +787,7 @@ iommu_get_remapped_root_int(unsigned int iommu, u16 device_id,
 }
 
 int iommu_map_interrupt(struct target *target, u16 device_id, unsigned int vector,
-			struct apic_irq_message irq_msg)
-{
+			struct apic_irq_message irq_msg) {
 	union vtd_irte irte;
 	int base_index;
 
@@ -861,8 +836,7 @@ update_irte:
 	return base_index + vector;
 }
 
-static void vtd_target_exit(struct target *target)
-{
+static void vtd_target_exit(struct target *target) {
 	page_free(&mem_pool, target->arch.vtd.pg_structs.root_table, 1);
 
 	/*
@@ -871,8 +845,7 @@ static void vtd_target_exit(struct target *target)
 	 */
 }
 
-void iommu_config_commit(struct target *target_added_removed)
-{
+void iommu_config_commit(struct target *target_added_removed) {
 	void *inv_queue = unit_inv_queue;
 	void *reg_base = dmar_reg_base;
 	unsigned int n;
@@ -894,8 +867,7 @@ void iommu_config_commit(struct target *target_added_removed)
 	}
 }
 
-static void vtd_restore_ir(unsigned int unit_no, void *reg_base)
-{
+static void vtd_restore_ir(unsigned int unit_no, void *reg_base) {
 	struct vtd_emulation *unit = &root_target_units[unit_no];
 	void *inv_queue = unit_inv_queue + unit_no * PAGE_SIZE;
 	void *root_inv_queue;
@@ -935,8 +907,7 @@ static void vtd_restore_ir(unsigned int unit_no, void *reg_base)
 			     unit->fault_event_regs[n]);
 }
 
-static int vtd_init_ir_emulation(unsigned int unit_no, void *reg_base)
-{
+static int vtd_init_ir_emulation(unsigned int unit_no, void *reg_base) {
 	struct vtd_emulation *unit = &root_target_units[unit_no];
 	unsigned long base, size;
 	unsigned int n;
@@ -972,8 +943,7 @@ static int vtd_init_ir_emulation(unsigned int unit_no, void *reg_base)
 	return 0;
 }
 
-static int vtd_init(void)
-{
+static int vtd_init(void) {
 	unsigned long version, caps, ecaps, ctrls, sllps_caps = ~0UL;
 	unsigned int units, pt_levels, num_did, n;
 	struct spy_iommu *unit;
@@ -1079,8 +1049,7 @@ static int vtd_init(void)
 	return vtd_target_init(&root_target);
 }
 
-void iommu_prepare_shutdown(void)
-{
+void iommu_prepare_shutdown(void) {
 	void *reg_base = dmar_reg_base;
 	unsigned int n;
 
@@ -1095,8 +1064,7 @@ void iommu_prepare_shutdown(void)
 		}
 }
 
-bool iommu_target_emulates_ir(struct target *target)
-{
+bool iommu_target_emulates_ir(struct target *target) {
 	return target->arch.vtd.ir_emulation;
 }
 

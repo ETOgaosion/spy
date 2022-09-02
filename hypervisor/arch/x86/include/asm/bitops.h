@@ -1,5 +1,5 @@
 /*
- * Jailhouse, a Linux-based partitioning hypervisor
+ * Spy, a Linux-based partitioning hypervisor
  *
  * Copyright (c) Siemens AG, 2013
  *
@@ -24,14 +24,12 @@
 #endif
 
 static inline __attribute__((always_inline)) int
-constant_test_bit(unsigned int nr, const volatile unsigned long *addr)
-{
+constant_test_bit(unsigned int nr, const volatile unsigned long *addr) {
 	return ((1UL << (nr % BITS_PER_LONG)) &
 		(addr[nr / BITS_PER_LONG])) != 0;
 }
 
-static inline int variable_test_bit(int nr, volatile const unsigned long *addr)
-{
+static inline int variable_test_bit(int nr, volatile const unsigned long *addr) {
 	int oldbit;
 
 	asm volatile("bt %2,%1\n\t"
@@ -47,8 +45,7 @@ static inline int variable_test_bit(int nr, volatile const unsigned long *addr)
 	 ? constant_test_bit((nr), (addr))	\
 	 : variable_test_bit((nr), (addr)))
 
-static inline int atomic_test_and_set_bit(int nr, volatile unsigned long *addr)
-{
+static inline int atomic_test_and_set_bit(int nr, volatile unsigned long *addr) {
 	int oldbit;
 
 	asm volatile("lock btsq %2,%1\n\t"
@@ -58,16 +55,14 @@ static inline int atomic_test_and_set_bit(int nr, volatile unsigned long *addr)
 	return oldbit;
 }
 
-static inline unsigned long ffzl(unsigned long word)
-{
+static inline unsigned long ffzl(unsigned long word) {
 	asm("rep; bsf %1,%0"
 		: "=r" (word)
 		: "r" (~word));
 	return word;
 }
 
-static inline unsigned long ffsl(unsigned long word)
-{
+static inline unsigned long ffsl(unsigned long word) {
 	asm("rep; bsf %1,%0"
 		: "=r" (word)
 		: "rm" (word));

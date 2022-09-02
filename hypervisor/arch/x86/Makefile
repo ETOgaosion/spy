@@ -1,5 +1,5 @@
 #
-# Jailhouse, a Linux-based partitioning hypervisor
+# Spy, a Linux-based partitioning hypervisor
 #
 # Copyright (c) Siemens AG, 2013-2016
 # Copyright (c) Valentine Sinitsyn, 2014
