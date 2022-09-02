@@ -5,11 +5,13 @@
 #include "../include/target.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 
@@ -59,7 +61,7 @@ int target_create(int argc, char *argv[]) {
 
     fd = open_dev();
 
-    err = ioctl(fd, SPY_TARGET_CREATE, &target_create);
+    err = ioctl(fd, STR_CREATE, &target_create);
     if (err)
         perror("SPY_TARGET_CREATE");
 
@@ -235,7 +237,7 @@ int target_shutdown_load(int argc, char *argv[], unsigned long mode) {
 
     fd = open_dev();
 
-    err = ioctl(fd, SPY_TARGET_LOAD, target_load);
+    err = ioctl(fd, STR_LOAD, target_load);
     if (err) {
         perror("SPY_TARGET_LOAD");
     }

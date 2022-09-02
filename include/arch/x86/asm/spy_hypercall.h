@@ -64,14 +64,14 @@ struct spy_comm_region {
 	COMM_REGION_GENERIC_HEADER;
 
 	/** I/O port address of the PM timer (x86-specific). */
-	__u16 pm_timer_address;
+	u16 pm_timer_address;
 	/** Number of CPUs available to the target (x86-specific). */
-	__u16 num_cpus;
+	u16 num_cpus;
 	/** Calibrated TSC frequency in kHz (x86-specific). */
-	__u32 tsc_khz;
+	u32 tsc_khz;
 	/** Calibrated APIC timer frequency in kHz or 0 if TSC deadline timer
 	 * is available (x86-specific). */
-	__u32 apic_khz;
+	u32 apic_khz;
 } __attribute__((packed));
 
 /**
@@ -80,8 +80,8 @@ struct spy_comm_region {
  *
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
-static inline __u32 spy_call(__u32 num) {
-	__u32 result;
+static inline u32 spy_call(u32 num) {
+	u32 result;
 
 	asm volatile(SPY_CALL_CODE
 		: SPY_CALL_RESULT
@@ -97,8 +97,8 @@ static inline __u32 spy_call(__u32 num) {
  *
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
-static inline __u32 spy_call_arg1(__u32 num, unsigned long arg1) {
-	__u32 result;
+static inline u32 spy_call_arg1(u32 num, unsigned long arg1) {
+	u32 result;
 
 	asm volatile(SPY_CALL_CODE
 		: SPY_CALL_RESULT
@@ -116,9 +116,9 @@ static inline __u32 spy_call_arg1(__u32 num, unsigned long arg1) {
  *
  * @return Result of the hypercall, semantic depends on the invoked service.
  */
-static inline __u32 spy_call_arg2(__u32 num, unsigned long arg1,
+static inline u32 spy_call_arg2(u32 num, unsigned long arg1,
 					unsigned long arg2) {
-	__u32 result;
+	u32 result;
 
 	asm volatile(SPY_CALL_CODE
 		: SPY_CALL_RESULT
@@ -135,7 +135,7 @@ static inline __u32 spy_call_arg2(__u32 num, unsigned long arg1,
  */
 static inline void
 spy_send_msg_to_target(struct spy_comm_region *comm_region,
-			   __u32 msg) {
+			   u32 msg) {
 	comm_region->reply_from_target = SPY_MSG_NONE;
 	/* ensure reply was cleared before sending new message */
 	asm volatile("mfence" : : : "memory");
@@ -150,7 +150,7 @@ spy_send_msg_to_target(struct spy_comm_region *comm_region,
  */
 static inline void
 spy_send_reply_from_target(struct spy_comm_region *comm_region,
-			       __u32 reply) {
+			       u32 reply) {
 	comm_region->msg_to_target = SPY_MSG_NONE;
 	/* ensure message was cleared before sending reply */
 	asm volatile("mfence" : : : "memory");

@@ -2,7 +2,7 @@
 // Created by 蓝色空间 on 2022/9/1.
 //
 
-#include "device.h"
+#include "include/device.h"
 
 #include <linux/init.h>
 #include <linux/module.h>
@@ -10,8 +10,10 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/device.h>
+#include <linux/compiler_types.h>
 
-#include "ioctl.h"
+#include "include/ioctl.h"
+#include "../lib/string.h"
 
 static int major = 0;
 
@@ -51,25 +53,25 @@ cp_err:
     return retval;
 }
 
-long spy_ioctl (struct file *spy_file, unsigned int ioctl, unsigned long arg) {
+long spy_ioctl (struct file *spy_file, unsigned long ioctl, unsigned long arg) {
     long err;
     switch (ioctl) {
-        case SPY_ENABLE:
+        case STR_ENABLE:
             err = hv_enable((struct spy_system __user *)arg);
             break;
-        case SPY_DISABLE:
+        case STR_DISABLE:
             err = hv_disable();
             break;
-        case SPY_TARGET_CREATE:
+        case STR_CREATE:
             err = hv_target_create((struct spy_target_create __user *)arg);
             break;
-        case SPY_TARGET_LOAD:
+        case STR_LOAD:
             err = hv_target_load((struct spy_target_load __user *)arg);
             break;
-        case SPY_TARGET_START:
+        case STR_START:
             err = hv_target_start((const char __user *)arg);
             break;
-        case SPY_TARGET_ELIMINATE:
+        case STR_ELIMINATE:
             err = hv_target_eliminate((const char __user *)arg);
             break;
         default:

@@ -11,6 +11,7 @@
 
 #include "../include/spy.h"
 #include "../include/device.h"
+#include "../../lib/string.h"
 
 int enable(int argc, char *argv[]) {
     void *config;
@@ -23,9 +24,9 @@ int enable(int argc, char *argv[]) {
 
     fd = open_dev();
 
-    err = ioctl(fd, JAILHOUSE_ENABLE, config);
+    err = ioctl(fd, STR_ENABLE, config);
     if (err)
-        perror("JAILHOUSE_ENABLE");
+        perror("SPY_ENABLE");
 
     close(fd);
     free(config);

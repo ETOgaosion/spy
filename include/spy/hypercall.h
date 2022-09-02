@@ -71,19 +71,19 @@
 	/** Communication region magic JHCOMM */ \
 	char signature[6]; \
 	/** Communication region ABI revision */ \
-	__u16 revision; \
+	u16 revision; \
 	/** Cell state, initialized by hypervisor, updated by target. */ \
-	volatile __u32 target_state; \
+	volatile u32 target_state; \
 	/** Message code sent from hypervisor to target. */ \
-	volatile __u32 msg_to_target; \
+	volatile u32 msg_to_target; \
 	/** Reply code sent from target to hypervisor. */ \
-	volatile __u32 reply_from_target; \
+	volatile u32 reply_from_target; \
 	/** Holds static flags, see SPY_COMM_FLAG_*. */ \
-	__u32 flags;	 \
+	u32 flags;	 \
 	/** Debug console that may be accessed by the inmate. */ \
 	struct spy_console console; \
 	/** Base address of PCI memory mapped config. */ \
-	__u64 pci_mmconfig_base;
+	u64 pci_mmconfig_base;
 
 #include <asm/spy_hypercall.h>
 

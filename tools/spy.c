@@ -14,10 +14,6 @@
 #include "include/target.h"
 #include "include/hardware.h"
 
-#define SPY_EXEC_DIR	LIBEXECDIR "/spy"
-#define SPY_DEVICE	"/dev/spy"
-#define SPY_TARGETS		"/sys/devices/spy/targets/"
-
 struct instrfmt {
     char *cmd, *subcmd, *help;
 };
@@ -68,7 +64,7 @@ static int target_management(int argc, char *argv[]) {
             err = target_shutdown_load(argc, argv, STR_SHUTDOWN);
             break;
         case STR_ELIMINATE:
-            err = target_simple_cmd(argc, argv);
+            err = target_simple_cmd(argc, argv, STR_ELIMINATE);
             break;
         case STR_STATS:
             err = target_stats(argc, argv);
@@ -94,7 +90,7 @@ int main(int argc, char *argv[]) {
             break;
         case STR_DISABLE:
             fd = open_dev();
-            err = ioctl(fd, SPY_DISABLE);
+            err = ioctl(fd, STR_DISABLE);
             if (err)
                 perror("SPY_DISABLE");
             close(fd);
@@ -104,7 +100,7 @@ int main(int argc, char *argv[]) {
             break;
         case STR_VERSION:
         case STR_V:
-            printf("Spy management tool %s\n", SPY_VERSION);
+            printf("Spy management tool %s\n", "0.0.1");
             return 0;
             break;
         case STR_HELP:

@@ -8,7 +8,7 @@
 #include <linux/module.h>
 #include <linux/kallsyms.h>
 
-#include "device.h"
+#include "include/device.h"
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Blue Space");
@@ -31,17 +31,10 @@ void handler_post(struct kprobe *p, struct pt_regs *regs,
     pr_info("[spy_patch] > patch successfully\n");
 }
 
-int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr) {
-    pr_info("[spy_patch] > patch failed\n");
-    pr_info("[spy_patch] > fault_handler: p->addr = 0x%p, trap #%dn", p->addr, trapnr);
-    return -1;
-}
-
 static int __init kprobe_init(void) {
     int ret;
     kp.pre_handler = handler_pre;
     kp.post_handler = handler_post;
-    kp.fault_handler = handler_fault;
 
     ret = register_kprobe(&kp);
     if (ret < 0) {
